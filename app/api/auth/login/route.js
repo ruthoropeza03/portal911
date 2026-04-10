@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import sql from '@/lib/neon';
 import { signToken } from '@/lib/auth';
 
+const ALLOWED_ROLES = ['Coordinador', 'Prensa', 'Gestión Humana', 'Administrador'];
+
 export async function POST(request) {
   try {
     const { email, password } = await request.json();
@@ -22,6 +24,11 @@ export async function POST(request) {
 
     const user = users[0];
 
+    // Verificar que el rol tenga acceso al sistema
+    if (!ALLOWED_ROLES.includes(user.role)) {
+      return NextResponse.json({ error: 'Este usuario no tiene acceso al sistema' }, { status: 403 });
+    }
+
     // Comparación directa de texto plano (SIN HASH)
     if (cleanPassword !== user.password_hash) {
       return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
@@ -35,9 +42,6 @@ export async function POST(request) {
     };
 
     const token = signToken(payload);
-
-    // No enviar la contraseña al cliente
-    const { password_hash, ...userWithoutPassword } = user;
 
     return NextResponse.json({
       user: payload,

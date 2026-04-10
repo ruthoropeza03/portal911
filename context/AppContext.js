@@ -155,6 +155,40 @@ export function AppProvider({ children }) {
     }
   };
 
+  // Acciones Usuarios
+  const addUser = async (userData) => {
+    const data = await fetchAPI('/api/users', {
+      method: 'POST',
+      body: JSON.stringify(userData)
+    });
+    if (data && !data.error) {
+      await cargarUsuarios();
+      return { success: true };
+    }
+    return { success: false, error: data?.error || 'Error al crear' };
+  };
+
+  const editUser = async (id, userData) => {
+    const data = await fetchAPI(`/api/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(userData)
+    });
+    if (data && !data.error) {
+      await cargarUsuarios();
+      return { success: true };
+    }
+    return { success: false, error: data?.error || 'Error al editar' };
+  };
+
+  const deleteUser = async (id) => {
+    const data = await fetchAPI(`/api/users/${id}`, { method: 'DELETE' });
+    if (data && !data.error) {
+      await cargarUsuarios();
+      return { success: true };
+    }
+    return { success: false, error: data?.error || 'Error al eliminar' };
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -169,6 +203,9 @@ export function AppProvider({ children }) {
         deleteNoticia,
         addReporte,
         marcarReporteRevisado,
+        addUser,
+        editUser,
+        deleteUser,
       }}
     >
       {children}

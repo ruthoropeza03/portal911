@@ -68,10 +68,10 @@ export async function POST(request) {
     const uInfo = await sql`SELECT department_id FROM users WHERE id = ${user.id}`;
     const descId = parseInt(uInfo[0].department_id) || null;
 
-    // Crear registro en BD
+    // Crear registro en BD (incluyendo mime_type y file_size)
     const result = await sql`
-      INSERT INTO reports (department_id, user_id, period_start, period_end, quincena, file_name, file_drive_id)
-      VALUES (${descId}, ${user.id}, ${periodStart}, ${periodEnd}, ${parseInt(quincena)}, ${file.name}, ${driveFileId})
+      INSERT INTO reports (department_id, user_id, period_start, period_end, quincena, file_name, file_drive_id, file_mime_type, file_size)
+      VALUES (${descId}, ${user.id}, ${periodStart}, ${periodEnd}, ${parseInt(quincena)}, ${file.name}, ${driveFileId}, ${file.type}, ${file.size})
       RETURNING *
     `;
 
@@ -82,3 +82,4 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Error al subir reporte' }, { status: 500 });
   }
 }
+

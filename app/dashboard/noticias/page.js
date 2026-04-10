@@ -9,23 +9,28 @@ export default function NoticiasPage() {
   const isPrensa = user?.role === "Prensa" || user?.role === "Administrador";
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [formData, setFormData] = useState({ titulo: "", contenido: "" });
+  const [formData, setFormData] = useState({ title: "", content: "", image_url: "" });
   const [searchTerm, setSearchTerm] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleAdd = (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault();
-    if (formData.titulo && formData.contenido) {
-      addNoticia({
-        titulo: formData.titulo,
-        contenido: formData.contenido,
-        fecha: new Date().toISOString().split("T")[0],
-      });
-      setFormData({ titulo: "", contenido: "" });
-      setIsFormOpen(false);
-    }
+    if (!formData.title || !formData.content) return;
+    setSubmitting(true);
+    await addNoticia({
+      title: formData.title,
+      content: formData.content,
+      image_url: formData.image_url || null,
+      visible: true,
+    });
+    setSubmitting(false);
+    setFormData({ title: "", content: "", image_url: "" });
+    setIsFormOpen(false);
   };
 
-  const filteredNoticias = noticias.filter(n => n.titulo.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredNoticias = noticias.filter(n =>
+    (n.title ?? "").toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -52,8 +57,8 @@ export default function NoticiasPage() {
                 required
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                value={formData.titulo}
-                onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
             </div>
             <div>
@@ -62,8 +67,18 @@ export default function NoticiasPage() {
                 required
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                value={formData.contenido}
-                onChange={(e) => setFormData({ ...formData, contenido: e.target.value })}
+                value={formData.content}
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">URL de Imagen (opcional)</label>
+              <input
+                type="url"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                value={formData.image_url}
+                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                placeholder="https://..."
               />
             </div>
             <div className="flex justify-end gap-2">
@@ -76,9 +91,10 @@ export default function NoticiasPage() {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                disabled={submitting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-300"
               >
-                Publicar
+                {submitting ? "Publicando..." : "Publicar"}
               </button>
             </div>
           </form>
@@ -106,17 +122,20 @@ export default function NoticiasPage() {
             filteredNoticias.map((noticia) => (
               <article key={noticia.id} className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-semibold text-gray-900">{noticia.titulo}</h3>
-                  <div className="flex items-center gap-4">
+                  <h3 className="text-lg font-semibold text-gray-900">{noticia.title}</h3>
+                  <div className="flex items-center gap-4 flex-shrink-0 ml-4">
                     <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                      {new Date(noticia.fecha).toLocaleDateString("es-VE")}
+                      {new Date(noticia.published_at).toLocaleDateString("es-VE")}
                     </span>
+                    {!noticia.visible && (
+                      <span className="text-xs font-semibold bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Oculta</span>
+                    )}
                     {isPrensa && (
-                      <div className="flex items-center gap-2 ml-2">
-                        <button className="text-blue-600 hover:text-blue-800" title="Editar (Simulado)">
+                      <div className="flex items-center gap-2">
+                        <button className="text-blue-600 hover:text-blue-800" title="Editar (próximamente)">
                           <Edit2 className="h-4 w-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => deleteNoticia(noticia.id)}
                           className="text-red-600 hover:text-red-800"
                           title="Eliminar"
@@ -127,7 +146,10 @@ export default function NoticiasPage() {
                     )}
                   </div>
                 </div>
-                <p className="text-gray-700 whitespace-pre-line">{noticia.contenido}</p>
+                <p className="text-gray-700 whitespace-pre-line">{noticia.content}</p>
+                {noticia.author_name && (
+                  <p className="text-xs text-gray-400 mt-3">Por: {noticia.author_name}</p>
+                )}
               </article>
             ))
           )}
