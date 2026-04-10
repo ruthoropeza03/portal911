@@ -9,7 +9,7 @@ export default function DashboardHome() {
   return (
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-        <h1 className="text-2xl font-bold text-gray-900">Bienvenido(a), {user?.nombre}</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Bienvenido(a), {user?.name}</h1>
         <p className="text-gray-500 mt-1">Estás accediendo bajo el rol de: <span className="font-semibold text-red-600">{user?.role}</span></p>
       </div>
 

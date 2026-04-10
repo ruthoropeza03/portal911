@@ -24,7 +24,7 @@ export default function ReportesPage() {
 
     // Simular subida
     addReporte({
-      coordinador: user.nombre,
+      coordinador: user.name,
       quincena,
       fechaSubida: new Date().toISOString(),
       nombreArchivo: file.name,

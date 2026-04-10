@@ -1,29 +1,31 @@
 "use client";
-
 import { useApp } from "@/context/AppContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Shield, User, Users, ClipboardList, Megaphone } from "lucide-react";
 import Image from "next/image";
 
 export default function LoginPage() {
   const { login } = useApp();
   const router = useRouter();
-  const [selectedRole, setSelectedRole] = useState("");
+  
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const roles = [
-    { name: "Usuario General", icon: User, desc: "Ver noticias y formatos públicos." },
-    { name: "Coordinador", icon: Users, desc: "Sube reportes quincenales." },
-    { name: "Prensa", icon: Megaphone, desc: "Gestión de noticias y comunicados." },
-    { name: "Gestión Humana", icon: ClipboardList, desc: "Revisión de reportes subidos." },
-    { name: "Administrador", icon: Shield, desc: "Acceso total, gestión de usuarios." },
-  ];
-
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (selectedRole) {
-      login(selectedRole);
-      router.push("/dashboard");
+    if (email && password) {
+      setLoading(true);
+      setErrorMsg("");
+      const res = await login(email, password);
+      setLoading(false);
+      
+      if (res.success) {
+        router.push("/dashboard");
+      } else {
+        setErrorMsg(res.error || "Error de inicio de sesión");
+      }
     }
   };
 
@@ -31,53 +33,53 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="bg-white rounded-xl shadow-xl p-8 max-w-md w-full border border-gray-200">
         <div className="text-center mb-8">
-          <Image src={"/logo.svg"} alt="logo" width={30} height={30} className="mx-auto mb-3" />
-
+          <Image src={"/logo.svg"} alt="logo" width={50} height={50} className="mx-auto mb-3" />
           <h1 className="text-2xl font-bold text-gray-900">Portal VEN 911</h1>
-          <p className="text-gray-500 mt-2">Centro de Comando y Control</p>
+          <p className="text-gray-500 mt-2">Acceso al Sistema</p>
         </div>
+
+        {errorMsg && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm text-center">
+            {errorMsg}
+          </div>
+        )}
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Seleccione un Perfil de Simulación
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Correo Electrónico
             </label>
-            <div className="grid gap-3">
-              {roles.map((role) => {
-                const Icon = role.icon;
-                const isSelected = selectedRole === role.name;
-                return (
-                  <button
-                    key={role.name}
-                    type="button"
-                    onClick={() => setSelectedRole(role.name)}
-                    className={`flex items-start p-3 border rounded-lg text-left transition-all ${isSelected
-                      ? "border-red-500 bg-red-50 ring-1 ring-red-500"
-                      : "border-gray-200 hover:bg-gray-50 hover:border-gray-300"
-                      }`}
-                  >
-                    <Icon
-                      className={`h-5 w-5 mt-0.5 mr-3 flex-shrink-0 ${isSelected ? "text-red-600" : "text-gray-400"
-                        }`}
-                    />
-                    <div>
-                      <p className={`font-medium ${isSelected ? "text-red-900" : "text-gray-900"}`}>
-                        {role.name}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-0.5">{role.desc}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+            <input
+              type="email"
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="juan@ven911.gob.ve"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="******"
+            />
+            <p className="text-xs text-gray-500 mt-2">Prueba local: juan@ven911.gob.ve / 123456</p>
           </div>
 
           <button
             type="submit"
-            disabled={!selectedRole}
+            disabled={!email || !password || loading}
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-300 disabled:cursor-not-allowed transition-colors"
           >
-            Ingresar al Sistema
+            {loading ? "Autenticando..." : "Ingresar"}
           </button>
         </form>
       </div>

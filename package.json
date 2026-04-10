@@ -9,6 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^2.4.3",
+    "googleapis": "^171.4.0",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.8.0",
     "mongodb": "^7.1.1",
     "neondb": "^0.8.2",

@@ -39,11 +39,11 @@ export default function UsuariosPage() {
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center text-red-700 font-bold">
-                          {usr.nombre.charAt(0)}
+                          {usr.name.charAt(0)}
                         </div>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{usr.nombre}</div>
+                        <div className="text-sm font-medium text-gray-900">{usr.name}</div>
                       </div>
                     </div>
                   </td>
