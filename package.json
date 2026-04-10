@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "lucide-react": "^1.8.0",
+    "mongodb": "^7.1.1",
+    "neondb": "^0.8.2",
     "next": "16.2.3",
     "react": "19.2.4",
     "react-dom": "19.2.4"
