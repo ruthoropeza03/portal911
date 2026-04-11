@@ -4,8 +4,8 @@ import { verifyAuth } from '@/lib/auth';
 
 export async function PUT(request, { params }) {
   const user = verifyAuth(request);
-  if (!user || user.role !== 'Gestión Humana') {
-    return NextResponse.json({ error: 'Solo Gestión Humana puede revisar reportes' }, { status: 403 });
+  if (!user || (user.role !== 'Gestión Humana' && user.role !== 'Administrador')) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 
   try {

@@ -17,28 +17,18 @@ export async function GET() {
   }
 }
 
-/**
- * POST /api/formats
- * Acepta multipart/form-data con:
- *   - file      (File)   obligatorio
- *   - name      (string) obligatorio
- *   - description (string) opcional
- *
- * Sube el archivo a la carpeta de FORMATOS en Drive y registra en BD.
- */
+// POST /api/formats
 export async function POST(request) {
   const user = verifyAuth(request);
-  if (!user || user.role !== 'Administrador') {
-    return NextResponse.json({ error: 'Solo el administrador puede subir formatos' }, { status: 403 });
+  if (!user || (user.role !== 'Administrador' && user.role !== 'Gestión Humana')) {
+    return NextResponse.json({ error: 'No autorizado para subir formatos' }, { status: 403 });
   }
 
   try {
     const contentType = request.headers.get('content-type') || '';
-
     let name, description, driveFileId, fileName;
 
     if (contentType.includes('multipart/form-data')) {
-      // Upload real de archivo
       const formData = await request.formData();
       const file = formData.get('file');
       name = formData.get('name');
@@ -55,7 +45,6 @@ export async function POST(request) {
       driveFileId = await uploadFileToDrive(buffer, file.name, file.type, formatsFolderId);
       fileName = file.name;
     } else {
-      // Compatibilidad con registro manual por ID (legacy)
       const body = await request.json();
       name = body.name;
       description = body.description || null;
@@ -79,28 +68,43 @@ export async function POST(request) {
   }
 }
 
-// DELETE /api/formats  { id }
-// Elimina el registro de BD y el archivo de Drive
+// PUT /api/formats/:id  (Opcional, manejamos por body id si no hay route params dinámicos configurados)
+export async function PUT(request) {
+  const user = verifyAuth(request);
+  if (!user || (user.role !== 'Administrador' && user.role !== 'Gestión Humana')) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+  }
+  try {
+    const { id, name, description } = await request.json();
+    const result = await sql`
+      UPDATE formats
+      SET name = ${name}, description = ${description}, updated_at = NOW()
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    return NextResponse.json(result[0]);
+  } catch (error) {
+    return NextResponse.json({ error: 'Error actualizando formato' }, { status: 500 });
+  }
+}
+
+// DELETE /api/formats
 export async function DELETE(request) {
   const user = verifyAuth(request);
-  if (!user || user.role !== 'Administrador') {
+  if (!user || (user.role !== 'Administrador' && user.role !== 'Gestión Humana')) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
   try {
     const { id } = await request.json();
 
-    // Obtener el drive ID antes de borrar el registro
     const rows = await sql`SELECT file_drive_id FROM formats WHERE id = ${id}`;
     if (rows.length === 0) {
       return NextResponse.json({ error: 'Formato no encontrado' }, { status: 404 });
     }
 
     const driveId = rows[0].file_drive_id;
-
-    // Borrar de BD
     await sql`DELETE FROM formats WHERE id = ${id}`;
 
-    // Intentar borrar de Drive (no fatal si falla)
     if (driveId && !driveId.startsWith('fake-')) {
       await deleteFileFromDrive(driveId);
     }
@@ -111,3 +115,4 @@ export async function DELETE(request) {
     return NextResponse.json({ error: 'Error eliminando formato' }, { status: 500 });
   }
 }
+

@@ -2,7 +2,7 @@
 
 import { useApp } from "@/context/AppContext";
 import { useState } from "react";
-import { PlusCircle, Search, Edit2, Trash2 } from "lucide-react";
+import { PlusCircle, Search, Edit2, Trash2, Image as ImageIcon, X } from "lucide-react";
 
 export default function NoticiasPage() {
   const { user, noticias, addNoticia, deleteNoticia } = useApp();
@@ -10,6 +10,7 @@ export default function NoticiasPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formData, setFormData] = useState({ title: "", content: "", image_url: "" });
+  const [imagePreview, setImagePreview] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -25,7 +26,14 @@ export default function NoticiasPage() {
     });
     setSubmitting(false);
     setFormData({ title: "", content: "", image_url: "" });
+    setImagePreview("");
     setIsFormOpen(false);
+  };
+
+  // Previsualizar imagen cuando se ingresa una URL
+  const handleImageUrlChange = (url) => {
+    setFormData({ ...formData, image_url: url });
+    setImagePreview(url);
   };
 
   const filteredNoticias = noticias.filter(n =>
@@ -61,6 +69,7 @@ export default function NoticiasPage() {
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Contenido</label>
               <textarea
@@ -71,20 +80,64 @@ export default function NoticiasPage() {
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">URL de Imagen (opcional)</label>
-              <input
-                type="url"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                placeholder="https://..."
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                URL de Imagen (opcional)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  value={formData.image_url}
+                  onChange={(e) => handleImageUrlChange(e.target.value)}
+                  placeholder="https://ejemplo.com/imagen.jpg"
+                />
+                {imagePreview && (
+                  <button
+                    type="button"
+                    onClick={() => handleImageUrlChange("")}
+                    className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
+                    title="Limpiar imagen"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Puedes usar imágenes de: Imgur, Flickr, Cloudinary, Google Drive (compartidas públicamente), o cualquier URL directa de imagen.
+              </p>
             </div>
+
+            {/* Previsualización de imagen */}
+            {imagePreview && (
+              <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Previsualización:</label>
+                <div className="relative group">
+                  <img
+                    src={imagePreview}
+                    alt="Vista previa"
+                    className="max-h-48 rounded-lg object-contain mx-auto border border-gray-300"
+                    onError={(e) => {
+                      e.target.src = "https://placehold.co/600x400/red/white?text=Error+de+imagen";
+                      e.target.alt = "Error al cargar la imagen";
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  {imagePreview.length > 50 ? imagePreview.substring(0, 50) + "..." : imagePreview}
+                </p>
+              </div>
+            )}
+
             <div className="flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setIsFormOpen(false)}
+                onClick={() => {
+                  setIsFormOpen(false);
+                  setImagePreview("");
+                  setFormData({ title: "", content: "", image_url: "" });
+                }}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
               >
                 Cancelar
@@ -146,6 +199,22 @@ export default function NoticiasPage() {
                     )}
                   </div>
                 </div>
+
+                {/* Mostrar imagen de la noticia */}
+                {noticia.image_url && (
+                  <div className="mb-4">
+                    <img
+                      src={noticia.image_url}
+                      alt={noticia.title}
+                      className="w-full max-h-96 object-cover rounded-lg border border-gray-200"
+                      onError={(e) => {
+                        e.target.src = "https://placehold.co/600x400/red/white?text=Imagen+no+disponible";
+                        e.target.alt = "Imagen no disponible";
+                      }}
+                    />
+                  </div>
+                )}
+
                 <p className="text-gray-700 whitespace-pre-line">{noticia.content}</p>
                 {noticia.author_name && (
                   <p className="text-xs text-gray-400 mt-3">Por: {noticia.author_name}</p>

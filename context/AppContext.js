@@ -189,6 +189,31 @@ export function AppProvider({ children }) {
     return { success: false, error: data?.error || 'Error al eliminar' };
   };
 
+  // Acciones Formatos
+  const addFormato = async (formData) => {
+    const data = await fetchAPI('/api/formats', {
+      method: 'POST',
+      body: formData
+    });
+    if (data && !data.error) {
+      await cargarFormatos();
+      return { success: true };
+    }
+    return { success: false, error: data?.error || 'Error al subir formato' };
+  };
+
+  const deleteFormato = async (id) => {
+    const data = await fetchAPI('/api/formats', {
+      method: 'DELETE',
+      body: JSON.stringify({ id })
+    });
+    if (data && !data.error) {
+      await cargarFormatos();
+      return { success: true };
+    }
+    return { success: false, error: data?.error || 'Error al eliminar formato' };
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -206,11 +231,14 @@ export function AppProvider({ children }) {
         addUser,
         editUser,
         deleteUser,
+        addFormato,
+        deleteFormato,
       }}
     >
       {children}
     </AppContext.Provider>
   );
+
 }
 
 export const useApp = () => useContext(AppContext);
