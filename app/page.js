@@ -53,7 +53,7 @@ export default async function Home() {
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40" />
           </div>
           <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8 flex flex-col items-center text-center">
-            <ShieldAlert className="h-16 w-16 text-red-500 mb-6 drop-shadow-lg" />
+            <Image src="/logo.svg" alt="logo" width={50} height={50} className="mx-auto mb-3" />
             <h1 className="text-4xl ext-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl max-w-4xl font-black drop-shadow-md">
               Atención Inmediata a Nivel Nacional
             </h1>
@@ -152,7 +152,7 @@ export default async function Home() {
                           <p className="text-xs text-gray-500 mt-1 line-clamp-2">{format.description}</p>
                         )}
                         <a
-                          href={format.file_drive_id.startsWith('http') ? format.file_drive_id : `https://drive.google.com/uc?export=download&id=${format.file_drive_id}`}
+                          href={`/api/drive/download?fileId=${format.file_drive_id}&public=1`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="mt-3 inline-block text-sm font-semibold text-red-600 hover:text-red-800"

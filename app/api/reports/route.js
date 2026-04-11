@@ -61,8 +61,9 @@ export async function POST(request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Subir a Drive
-    const driveFileId = await uploadFileToDrive(buffer, file.name, file.type);
+    // Subir a la carpeta de informes en Drive
+    const reportsFolderId = process.env.GOOGLE_DRIVE_REPORTS_FOLDER_ID;
+    const driveFileId = await uploadFileToDrive(buffer, file.name, file.type, reportsFolderId);
 
     // Get user's department_id directly from db
     const uInfo = await sql`SELECT department_id FROM users WHERE id = ${user.id}`;

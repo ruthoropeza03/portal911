@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import sql from '@/lib/neon';
 import { verifyAuth } from '@/lib/auth';
 
-// GET público — las noticias visibles son públicas para la Landing Page
-// Los usuarios autenticados (admin) pueden ver todas, incluyendo ocultas
+
 export async function GET(request) {
   const user = verifyAuth(request);
   const isAdmin = user?.role === 'Administrador';
