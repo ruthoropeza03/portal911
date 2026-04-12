@@ -1,11 +1,11 @@
 "use client";
 
 import { useApp } from "@/context/AppContext";
-import { LogOut, Bell, ShieldAlert } from "lucide-react";
+import { LogOut, Bell, Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-export default function Navbar() {
+export default function Navbar({ onMenuClick }) {
   const { user, logout } = useApp();
   const router = useRouter();
 
@@ -21,11 +21,22 @@ export default function Navbar() {
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Image src={'/logo.svg'} alt="logo" width={30} height={30} className="mr-2" />
-            {/*<ShieldAlert className="h-8 w-8 text-red-600 mr-2" /> */}
-            <span className="font-bold text-xl text-gray-900 hidden sm:block">
-              VEN 911 <span className="font-normal text-gray-500 text-sm ml-2"></span>
-            </span>
+            {/* Botón de menú para móvil */}
+            <button
+              onClick={onMenuClick}
+              className="md:hidden p-2 mr-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Menú"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+
+            {/* Logo - sin funcionalidad de colapsar */}
+            <div className="flex items-center">
+              <Image src={'/logo.svg'} alt="logo" width={30} height={30} className="mr-2" />
+              <span className="font-bold text-xl text-gray-900">
+                VEN 911
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
