@@ -3,6 +3,8 @@ import sql from '@/lib/neon';
 import { verifyAuth } from '@/lib/auth';
 import { uploadFileToDrive, deleteFileFromDrive } from '@/lib/gdrive';
 
+export const dynamic = 'force-dynamic';
+
 // GET público — sirve a la Landing Page sin autenticación
 export async function GET() {
   try {

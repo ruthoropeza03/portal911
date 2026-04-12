@@ -3,6 +3,8 @@ import Image from "next/image";
 import sql from "@/lib/neon";
 import { Newspaper, FileDown, ShieldAlert, Phone, ChevronRight } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   // Fetch visible news and formats
   let newsList = [];

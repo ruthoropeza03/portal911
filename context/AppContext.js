@@ -11,8 +11,9 @@ export function AppProvider({ children }) {
   const [noticias, setNoticias] = useState([]);
   const [reportes, setReportes] = useState([]);
   const [formatos, setFormatos] = useState([]);
+  const [bitacora, setBitacora] = useState([]);
   const [mounted, setMounted] = useState(false);
-  
+
   const router = useRouter();
 
   // Función genérica para fetch autenticado
@@ -30,12 +31,12 @@ export function AppProvider({ children }) {
       ...options,
       headers
     });
-    
+
     if (response.status === 401) {
       logout();
       return null;
     }
-    
+
     return response.json();
   };
 
@@ -54,11 +55,12 @@ export function AppProvider({ children }) {
     if (mounted && user) {
       cargarNoticias();
       cargarFormatos();
-      
+
       if (user.role === "Administrador") {
         cargarUsuarios();
+        cargarBitacora();
       }
-      
+
       if (['Coordinador', 'Gestión Humana', 'Administrador'].includes(user.role)) {
         cargarReportes();
       }
@@ -85,6 +87,11 @@ export function AppProvider({ children }) {
     if (data && !data.error) setReportes(data);
   };
 
+  const cargarBitacora = async () => {
+    const data = await fetchAPI('/api/news');
+    if (data && !data.error) setBitacora(data);
+  };
+
   const login = async (email, password) => {
     try {
       const response = await fetch('/api/auth/login', {
@@ -93,7 +100,7 @@ export function AppProvider({ children }) {
         body: JSON.stringify({ email, password })
       });
       const data = await response.json();
-      
+
       if (response.ok) {
         localStorage.setItem("ven911_token", data.token);
         localStorage.setItem("ven911_user", JSON.stringify(data.user));
@@ -222,6 +229,7 @@ export function AppProvider({ children }) {
         noticias,
         reportes,
         formatos,
+        bitacora,
         login,
         logout,
         addNoticia,
