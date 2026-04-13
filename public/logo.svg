@@ -1,110 +1,35 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
  "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" version="1.0" width="143pt" height="204pt" viewBox="0 0 143 204" preserveAspectRatio="xMidYMid meet">
-  <defs>
-    <!-- Degradado para el efecto 3D del marcador verde -->
-    <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
-      <stop offset="70%" style="stop-color:#2E7D32;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1B5E20;stop-opacity:1" />
-    </linearGradient>
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+ width="143.000000pt" height="204.000000pt" viewBox="0 0 143.000000 204.000000"
+ preserveAspectRatio="xMidYMid meet">
 
-    <!-- Degradado para el disco rojo central (efecto elevado) -->
-    <radialGradient id="redGradient" cx="40%" cy="30%" r="60%">
-      <stop offset="0%" style="stop-color:#FF5252;stop-opacity:1" />
-      <stop offset="60%" style="stop-color:#D32F2F;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#B71C1C;stop-opacity:1" />
-    </radialGradient>
-
-    <!-- Sombra lateral derecha para volumen 3D -->
-    <linearGradient id="shadowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#000000;stop-opacity:0" />
-      <stop offset="70%" style="stop-color:#000000;stop-opacity:0" />
-      <stop offset="100%" style="stop-color:#000000;stop-opacity:0.3" />
-    </linearGradient>
-  </defs>
-
-  <g transform="translate(0,204) scale(0.1,-0.1)" fill="#000" stroke="none">
-    
-    <!-- Capa posterior: Sombra lateral derecha para efecto 3D -->
-    <path d="M715 1954 c-50 -11 -100 -30 -146 -56 c-88 -48 -157 -126 -200 -225
-             c-28 -63 -44 -135 -48 -204 c-2 -33 2 -55 14 -78 c6 -12 12 -24 16 -36
-             c2 -7 0 -18 -5 -25 c-6 -9 -5 -17 4 -28 c10 -14 14 -41 11 -78
-             c-2 -28 1 -64 7 -80 c4 -12 11 -26 16 -32 c13 -17 62 -96 110 -178
-             c48 -82 104 -172 125 -200 c29 -39 44 -56 65 -74 c21 -18 41 -28 69 -32
-             c37 -5 47 -1 78 27 c47 43 104 116 161 204 c31 49 77 122 102 162
-             c46 74 179 288 210 337 c23 36 35 56 45 76 c19 36 28 76 29 112
-             c0 28 -4 43 -16 61 c-15 23 -28 76 -28 116 c0 18 3 43 7 55
-             c6 19 5 31 -2 43 c-7 13 -8 23 -3 33 c4 8 1 15 -8 19
-             c-9 4 -13 12 -10 21 c5 14 0 38 -10 48 c-10 10 -39 36 -65 58
-             c-70 58 -160 95 -258 105 c-32 4 -71 5 -85 3z"
-          fill="url(#shadowGradient)" />
-
-    <!-- Base del Marcador: Forma de gota/pin en verde 3D -->
-    <path d="M721 1954 c-198 -43 -400 -217 -482 -414 -42 -99 -62 -216 -53 -305
-             12 -128 14 -131 326 -705 53 -96 110 -202 128 -235 39 -74 53 -85 108 -85
-             34 0 49 6 71 28 40 40 532 867 555 932 22 63 26 160 9 182 -12 14 -10 42
-             6 104 5 17 5 37 1 44 -5 7 -6 19 -3 26 8 22 -18 115 -30 107 -6 -3 -7 -1
-             -3 5 9 15 -17 65 -61 120 -142 174 -347 245 -572 196z"
-          fill="url(#greenGradient)" />
-
-    <!-- Sombra interna del borde derecho del marcador (bisel) -->
-    <path d="M900 1520 c-20 32 -55 76 -82 103 c-70 70 -175 122 -279 139
-             c-70 12 -148 11 -208 -3 c-36 -8 -61 -17 -78 -28 c-8 -5 -18 -6 -22 -2
-             c-12 12 -60 -16 -94 -54 c-33 -38 -79 -100 -90 -122 c-8 -16 -7 -19 7 -19
-             c22 0 46 29 55 66 c10 45 27 73 59 98 c38 30 94 53 160 66 c46 9 121 8
-             160 -2 c47 -12 97 -37 129 -65 c17 -14 29 -28 27 -30 -3 -3 -15 3 -28 13
-             c-13 10 -32 18 -43 17 c-11 0 -23 4 -26 9 c-5 8 -12 8 -26 -2 c-14 -9 -20
-             -9 -26 -1 c-3 6 -12 8 -20 5 c-9 -3 -13 -1 -11 5 c3 6 0 13 -7 15 c-8 2
-             -14 0 -14 -5 c0 -4 -5 -8 -10 -8 -6 0 -10 3 -10 8 c0 4 -6 9 -14 9
-             c-8 0 -14 -4 -12 -9 c2 -5 -1 -12 -7 -16 c-6 -4 -11 -2 -11 4 c0 5 -8 9
-             -17 9 c-10 0 -16 -5 -13 -12 c3 -7 0 -12 -8 -12 c-8 0 -12 5 -9 12
-             c3 7 0 12 -8 12 c-8 0 -15 -6 -15 -14 0 -8 -5 -12 -12 -9 c-8 3 -10 11
-             -6 20 c3 8 1 13 -5 12 c-7 -2 -13 2 -15 8 c-2 6 -6 11 -9 11 c-3 0 -7 -6
-             -7 -13 0 -7 -4 -9 -9 -5 c-4 4 -8 13 -8 21 0 8 4 12 10 9 c5 -2 10 1 10
-             7 c0 6 -5 11 -10 11 -6 0 -10 -5 -10 -11 0 -6 -5 -8 -12 -5 c-7 3 -8 10
-             -4 15 c5 7 1 11 -11 11 -14 0 -17 -5 -13 -15 c3 -9 1 -12 -6 -9 c-7 3 -9
-             9 -6 14 c4 5 1 9 -6 9 c-7 0 -12 -5 -9 -12 c3 -7 0 -12 -8 -12 c-8 0 -12
-             5 -9 12 c3 7 0 12 -8 12 c-8 0 -12 -5 -9 -12 c3 -7 0 -12 -8 -12 c-8 0 -12
-             5 -9 12 c3 7 0 12 -8 12 c-8 0 -12 -5 -9 -12 c3 -7 0 -12 -8 -12 c-8 0 -12
-             5 -9 12 c3 7 0 12 -8 12z"
-          fill="#1B5E20" opacity="0.4" />
-
-    <!-- Disco Central (Capa Media): Círculo rojo elevado -->
-    <ellipse cx="715" cy="1080" rx="160" ry="155" fill="url(#redGradient)" />
-    
-    <!-- Borde de sombra para el disco rojo (efecto de elevación) -->
-    <ellipse cx="720" cy="1085" rx="160" ry="155" fill="none" stroke="#8B0000" stroke-width="4" opacity="0.5" />
-
-    <!-- Contorno del teléfono -->
-    <!-- Base del auricular -->
-    <rect x="620" y="950" width="190" height="45" rx="10" ry="10" fill="white" />
-    
-    <!-- Parte superior del auricular (curva izquierda) -->
-    <path d="M620 960 Q580 920 590 890 Q600 870 620 870 L640 870 Q650 870 650 880 L650 920 Q650 930 640 930 L620 930 Q615 930 615 925 Z" fill="white" />
-    
-    <!-- Parte superior del auricular (curva derecha) -->
-    <path d="M810 960 Q850 920 840 890 Q830 870 810 870 L790 870 Q780 870 780 880 L780 920 Q780 930 790 930 L810 930 Q815 930 815 925 Z" fill="white" />
-
-    <!-- Texto "9-11" en blanco -->
-    <!-- Número 9 -->
-    <text x="655" y="1065" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="95" fill="white" text-anchor="middle">9</text>
-    
-    <!-- Guión -->
-    <rect x="710" y="1020" width="15" height="45" rx="3" fill="white" />
-    
-    <!-- Número 11 -->
-    <text x="775" y="1065" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="95" fill="white" text-anchor="middle">11</text>
-
-    <!-- Punto de anclaje inferior del marcador (sombra/volumen) -->
-    <path d="M710 1950 c-6 -8 -8 -18 -5 -25 c5 -9 12 -9 20 0 c7 8 8 18 4 26
-             c-5 10 -12 10 -19 -1z" fill="#1B5E20" opacity="0.6" />
-    
-    <!-- Detalle de brillo en la parte superior del marcador (efecto mate) -->
-    <path d="M640 1600 c-30 -35 -55 -85 -65 -130 c-8 -36 -7 -38 14 -27
-             c30 16 80 45 105 61 c38 24 46 35 34 47 c-13 13 -56 34 -88 49z"
-          fill="white" opacity="0.15" />
-
-  </g>
+<!-- Cambiado el color del cuerpo principal a Verde Bosque (#2E8B57) -->
+<g transform="translate(0.000000,204.000000) scale(0.100000,-0.100000)"
+fill="#2E8B57" stroke="none">
+<path d="M721 1954 c-198 -43 -400 -217 -482 -414 -42 -99 -62 -216 -53 -305
+12 -128 14 -131 326 -705 53 -96 110 -202 128 -235 39 -74 53 -85 108 -85 34
+0 49 6 71 28 40 40 532 867 555 932 22 63 26 160 9 182 -12 14 -10 42 6 104 5
+17 5 37 1 44 -5 7 -6 19 -3 26 8 22 -18 115 -30 107 -6 -3 -7 -1 -3 5 9 15
+-17 65 -61 120 -142 174 -347 245 -572 196z m275 -183 c64 -28 111 -76 120
+-120 7 -34 7 -34 -25 -28 -17 4 -73 12 -124 18 -50 6 -99 17 -107 24 -27 22
+-50 25 -123 15 -99 -14 -163 -37 -181 -64 -8 -13 -27 -27 -43 -31 -15 -3 -59
+-22 -97 -41 -38 -18 -71 -32 -74 -30 -2 3 -1 19 3 37 11 47 115 148 190 184
+100 47 186 65 305 62 83 -3 116 -8 156 -26z m8 -166 c27 -4 60 -11 72 -16 22
+-8 23 -11 12 -36 -26 -62 -36 -66 -129 -52 -46 7 -88 16 -93 20 -5 4 -5 28 -2
+54 l7 46 42 -5 c23 -3 64 -8 91 -11z m-444 -74 c0 -37 -16 -53 -76 -76 -27
+-10 -59 -25 -71 -32 -27 -18 -38 -12 -52 28 l-10 31 82 38 c103 49 127 51 127
+11z m420 -245 l0 -194 -56 -4 -55 -3 2 126 c1 69 -1 131 -5 138 -4 7 -17 11
+-29 9 -16 -2 -23 3 -25 18 -2 15 10 28 48 52 27 17 50 36 50 42 0 5 16 10 35
+10 l35 0 0 -194z m-180 14 c0 -85 -4 -171 -8 -190 -7 -34 -10 -35 -56 -38
+l-49 -3 7 129 c6 111 4 130 -9 135 -8 4 -22 4 -30 1 -11 -5 -15 1 -15 20 0 18
+8 30 28 40 15 8 38 26 52 41 17 19 32 25 53 23 l29 -3 -2 -155z m-190 105 c22
+-24 23 -28 16 -146 -9 -164 -32 -204 -125 -216 -33 -5 -44 -1 -65 20 -17 17
+-26 37 -26 57 0 27 3 30 35 32 19 0 41 1 47 2 7 1 13 -7 13 -16 0 -36 20 -22
+23 16 3 34 1 38 -15 31 -37 -15 -58 -16 -78 -1 -17 12 -20 26 -19 90 0 42 6
+86 13 100 31 57 139 76 181 31z"/>
+<path d="M510 1305 c0 -37 4 -65 10 -65 6 0 10 28 10 65 0 37 -4 65 -10 65 -6
+0 -10 -28 -10 -65z"/>
+</g>
 </svg>
