@@ -143,7 +143,7 @@ export function AppProvider({ children }) {
   const addReporte = async (formData) => {
     const data = await fetchAPI('/api/reports', {
       method: 'POST',
-      body: formData // Ya es multipart
+      body: formData
     });
     if (data && !data.error) {
       await cargarReportes();

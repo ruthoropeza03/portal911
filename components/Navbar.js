@@ -21,7 +21,7 @@ export default function Navbar({ onMenuClick }) {
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            {/* Botón de menú para móvil */}
+            {/* Boton tlf */}
             <button
               onClick={onMenuClick}
               className="md:hidden p-2 mr-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -30,7 +30,6 @@ export default function Navbar({ onMenuClick }) {
               <Menu className="h-6 w-6" />
             </button>
 
-            {/* Logo - sin funcionalidad de colapsar */}
             <div className="flex items-center">
               <Image src={'/logo.svg'} alt="logo" width={30} height={30} className="mr-2" />
               <span className="font-bold text-xl text-gray-900">

@@ -2,7 +2,7 @@
 
 import { useApp } from "@/context/AppContext";
 import { useState } from "react";
-import { PlusCircle, Search, Edit2, Trash2, Image as ImageIcon, X } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Image as ImageIcon, X } from "lucide-react";
 
 export default function NoticiasPage() {
   const { user, noticias, addNoticia, deleteNoticia } = useApp();
@@ -49,7 +49,7 @@ export default function NoticiasPage() {
             onClick={() => setIsFormOpen(!isFormOpen)}
             className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
           >
-            <PlusCircle className="h-5 w-5 mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             Nueva Noticia
           </button>
         )}

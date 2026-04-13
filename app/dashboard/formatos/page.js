@@ -46,13 +46,13 @@ export default function FormatosPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Formatos Oficiales</h1>
-          <p className="text-gray-500 text-sm mt-1">Biblioteca de plantillas y documentos institucionales homologados.</p>
+          <p className="text-gray-500 text-sm mt-1">Biblioteca de plantillas y documentos institucionales.</p>
         </div>
 
         {canManage && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm hover:shadow-md active:scale-95"
+            className="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-all shadow-sm hover:shadow-md active:scale-95"
           >
             <Plus className="w-4 h-4 mr-2" />
             Nuevo Formato

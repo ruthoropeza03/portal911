@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useApp } from "@/context/AppContext";
+import { Plus } from "lucide-react";
 
 const ROLES = ["Coordinador", "Prensa", "Gestión Humana", "Administrador"];
 
@@ -80,9 +81,10 @@ export default function UsuariosPage() {
         <h1 className="text-2xl font-bold text-gray-900">Gestión de Usuarios</h1>
         <button
           onClick={openCreate}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+          className="flex items-center bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
         >
-          + Nuevo Usuario
+          < Plus className="w-4 h4- mr-2" />
+          Nuevo Usuario
         </button>
       </div>
 
