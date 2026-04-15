@@ -24,16 +24,18 @@ export default function NoticiasPage() {
   const [imagePreview, setImagePreview] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  /** `id -> false` = minimizada; sin clave o `true` = expandida */
+  
+  // CAMBIO: Ahora por defecto todas las tarjetas están minimizadas (false)
+  // `id -> false` = minimizada; `true` = expandida
   const [cardExpanded, setCardExpanded] = useState({});
 
-  const isCardExpanded = (id) => cardExpanded[id] !== false;
+  const isCardExpanded = (id) => cardExpanded[id] === true; // Solo true = expandida
 
   const toggleCard = (id) => {
-    setCardExpanded((prev) => {
-      const expanded = prev[id] !== false;
-      return { ...prev, [id]: !expanded };
-    });
+    setCardExpanded((prev) => ({
+      ...prev,
+      [id]: prev[id] === true ? false : true // Alterna entre true/false
+    }));
   };
 
   const resetFormAndClose = () => {
@@ -155,7 +157,7 @@ export default function NoticiasPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Imagen (opcional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Imagen de portada(opcional)</label>
               <div className="relative border-2 border-dashed border-gray-200 rounded-xl p-4 sm:p-5 text-center hover:border-red-400 transition-colors group cursor-pointer min-h-[120px] flex flex-col items-center justify-center">
                 <input
                   type="file"
@@ -182,9 +184,6 @@ export default function NoticiasPage() {
                   Quitar imagen actual
                 </button>
               )}
-              <p className="text-xs text-gray-500 mt-1">
-                La imagen se sube automáticamente a Google Drive (carpeta &quot;Noticias&quot;).
-              </p>
             </div>
 
             {/* Previsualización de imagen */}

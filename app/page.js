@@ -129,7 +129,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Sección de Formatos Institucionales */}
+        {/* Sección de Formatos Institucionales 
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -174,8 +174,8 @@ export default async function Home() {
               )}
             </div>
           </div>
-        </section>
-      </main>
+        </section>*/}
+      </main> 
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 border-t border-gray-800">
