@@ -122,9 +122,23 @@ export function AppProvider({ children }) {
 
   // Acciones Noticias
   const addNoticia = async (noticia) => {
+    const body = noticia instanceof FormData ? noticia : JSON.stringify(noticia);
     const data = await fetchAPI('/api/news', {
       method: 'POST',
-      body: JSON.stringify(noticia)
+      body
+    });
+    if (data && !data.error) {
+      await cargarNoticias();
+      return true;
+    }
+    return false;
+  };
+
+  const updateNoticia = async (id, noticia) => {
+    const body = noticia instanceof FormData ? noticia : JSON.stringify(noticia);
+    const data = await fetchAPI(`/api/news/${id}`, {
+      method: 'PUT',
+      body
     });
     if (data && !data.error) {
       await cargarNoticias();
@@ -134,7 +148,6 @@ export function AppProvider({ children }) {
   };
 
   const deleteNoticia = async (id) => {
-    // Por hacer: DELETE /api/news/[id]
     await fetchAPI(`/api/news/${id}`, { method: 'DELETE' });
     cargarNoticias();
   };
@@ -233,6 +246,7 @@ export function AppProvider({ children }) {
         login,
         logout,
         addNoticia,
+        updateNoticia,
         deleteNoticia,
         addReporte,
         marcarReporteRevisado,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useApp } from "@/context/AppContext";
+import { textoResumenNoticia } from "@/lib/formateadorNoticia";
 import { Newspaper, Bell } from "lucide-react";
 
 export default function DashboardHome() {
@@ -35,7 +36,7 @@ export default function DashboardHome() {
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                    {noticia.content}
+                    {textoResumenNoticia(noticia.content)}
                   </p>
                 </div>
               ))

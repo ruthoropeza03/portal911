@@ -67,7 +67,7 @@ export default function DashboardLayout({ children }) {
         />
         <main className="flex-1 transition-all duration-300 ease-in-out">
           <div className="p-4 sm:p-6 lg:p-8 overflow-y-auto h-[calc(100vh-4rem)]">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-7xl mx-auto w-full min-w-0">
               {children}
             </div>
           </div>

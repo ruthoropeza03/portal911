@@ -2,38 +2,103 @@
 
 import { useApp } from "@/context/AppContext";
 import { useState } from "react";
-import { Plus, Search, Edit2, Trash2, Image as ImageIcon, X } from "lucide-react";
+import Link from "next/link";
+import { Plus, Search, Edit2, Trash2, X, ExternalLink, Upload, Loader2, Eye, EyeOff, ChevronDown } from "lucide-react";
+import { parseContenidoNoticia, textoRawParaEdicion, textoResumenNoticia } from "@/lib/formateadorNoticia";
+import NoticiaContenido from "@/components/NoticiaContenido";
+
+const emptyForm = () => ({
+  title: "",
+  content: "",
+  imageFile: null,
+  clearImage: false,
+});
 
 export default function NoticiasPage() {
-  const { user, noticias, addNoticia, deleteNoticia } = useApp();
+  const { user, noticias, addNoticia, updateNoticia, deleteNoticia } = useApp();
   const isPrensa = user?.role === "Prensa" || user?.role === "Administrador";
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [formData, setFormData] = useState({ title: "", content: "", image_url: "" });
+  const [editingId, setEditingId] = useState(null);
+  const [formData, setFormData] = useState(emptyForm);
   const [imagePreview, setImagePreview] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  /** `id -> false` = minimizada; sin clave o `true` = expandida */
+  const [cardExpanded, setCardExpanded] = useState({});
 
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    if (!formData.title || !formData.content) return;
-    setSubmitting(true);
-    await addNoticia({
-      title: formData.title,
-      content: formData.content,
-      image_url: formData.image_url || null,
-      visible: true,
+  const isCardExpanded = (id) => cardExpanded[id] !== false;
+
+  const toggleCard = (id) => {
+    setCardExpanded((prev) => {
+      const expanded = prev[id] !== false;
+      return { ...prev, [id]: !expanded };
     });
-    setSubmitting(false);
-    setFormData({ title: "", content: "", image_url: "" });
+  };
+
+  const resetFormAndClose = () => {
+    setEditingId(null);
+    setFormData(emptyForm());
     setImagePreview("");
     setIsFormOpen(false);
   };
 
-  // Previsualizar imagen cuando se ingresa una URL
-  const handleImageUrlChange = (url) => {
-    setFormData({ ...formData, image_url: url });
-    setImagePreview(url);
+  const openNewNoticia = () => {
+    setEditingId(null);
+    setFormData(emptyForm());
+    setImagePreview("");
+    setIsFormOpen(true);
+  };
+
+  const startEdit = (noticia) => {
+    setEditingId(noticia.id);
+    setFormData({
+      title: noticia.title ?? "",
+      content: textoRawParaEdicion(noticia.content),
+      imageFile: null,
+      clearImage: false,
+    });
+    setImagePreview(noticia.image_url || "");
+    setIsFormOpen(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.title || !formData.content) return;
+    setSubmitting(true);
+    const payload = new FormData();
+    payload.append("title", formData.title.trim());
+    payload.append("content", formData.content);
+    if (formData.imageFile) {
+      payload.append("image", formData.imageFile);
+    }
+    if (editingId != null) {
+      payload.append("clear_image", formData.clearImage ? "true" : "false");
+    }
+    const ok =
+      editingId != null
+        ? await updateNoticia(editingId, payload)
+        : await addNoticia(payload);
+    setSubmitting(false);
+    if (ok) resetFormAndClose();
+  };
+
+  const handleImageFileChange = (file) => {
+    setFormData((prev) => ({ ...prev, imageFile: file || null, clearImage: false }));
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+      return;
+    }
+    setImagePreview("");
+  };
+
+  const handleDelete = async (id) => {
+    await deleteNoticia(id);
+    if (editingId === id) resetFormAndClose();
+  };
+
+  const toggleVisible = async (noticia) => {
+    await updateNoticia(noticia.id, { visible: !noticia.visible });
   };
 
   const filteredNoticias = noticias.filter(n =>
@@ -41,24 +106,27 @@ export default function NoticiasPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Noticias y Comunicados</h1>
+    <div className="space-y-4 sm:space-y-6 w-full min-w-0">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Noticias y Comunicados</h1>
         {isPrensa && (
           <button
-            onClick={() => setIsFormOpen(!isFormOpen)}
-            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            type="button"
+            onClick={openNewNoticia}
+            className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 sm:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition touch-manipulation min-h-[44px] sm:min-h-0"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-2 shrink-0" />
             Nueva Noticia
           </button>
         )}
       </div>
 
       {isFormOpen && isPrensa && (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <h2 className="text-lg font-semibold mb-4">Publicar Noticia</h2>
-          <form onSubmit={handleAdd} className="space-y-4">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 w-full min-w-0">
+          <h2 className="text-lg font-semibold mb-4">
+            {editingId != null ? "Editar noticia" : "Publicar noticia"}
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
               <input
@@ -66,46 +134,56 @@ export default function NoticiasPage() {
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Contenido</label>
+              <p className="text-xs text-gray-500 mb-2">
+                El texto se publicará con formato institucional (sangría, interlineado 1,5). Puedes pegar en una
+                línea el enlace de un post de Instagram, X, Facebook, TikTok o YouTube y se mostrará incrustado.
+              </p>
               <textarea
                 required
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                rows={10}
+                className="w-full min-h-[200px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 font-mono text-sm"
                 value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
+                placeholder={"Escribe el cuerpo de la noticia. Una línea en blanco separa párrafos.\n\nhttps://www.instagram.com/p/ejemplo/"}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                URL de Imagen (opcional)
-              </label>
-              <div className="flex gap-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Imagen (opcional)</label>
+              <div className="relative border-2 border-dashed border-gray-200 rounded-xl p-4 sm:p-5 text-center hover:border-red-400 transition-colors group cursor-pointer min-h-[120px] flex flex-col items-center justify-center">
                 <input
-                  type="url"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  value={formData.image_url}
-                  onChange={(e) => handleImageUrlChange(e.target.value)}
-                  placeholder="https://ejemplo.com/imagen.jpg"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageFileChange(e.target.files?.[0] || null)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
-                {imagePreview && (
-                  <button
-                    type="button"
-                    onClick={() => handleImageUrlChange("")}
-                    className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
-                    title="Limpiar imagen"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                )}
+                <Upload className="w-7 h-7 text-gray-300 mx-auto mb-2 group-hover:text-red-500 transition-colors" />
+                <p className="text-sm font-medium text-gray-600">
+                  {formData.imageFile ? formData.imageFile.name : "Pulse para seleccionar imagen"}
+                </p>
+                <p className="text-[10px] text-gray-400 mt-1 uppercase">JPG, PNG, WEBP</p>
               </div>
+              {editingId != null && imagePreview && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData((prev) => ({ ...prev, imageFile: null, clearImage: true }));
+                    setImagePreview("");
+                  }}
+                  className="mt-2 text-xs inline-flex items-center gap-1 text-red-600 hover:text-red-800"
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Quitar imagen actual
+                </button>
+              )}
               <p className="text-xs text-gray-500 mt-1">
-                Puedes usar imágenes de: Imgur, Flickr, Cloudinary, Google Drive (compartidas públicamente), o cualquier URL directa de imagen.
+                La imagen se sube automáticamente a Google Drive (carpeta &quot;Noticias&quot;).
               </p>
             </div>
 
@@ -130,97 +208,167 @@ export default function NoticiasPage() {
               </div>
             )}
 
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  setIsFormOpen(false);
-                  setImagePreview("");
-                  setFormData({ title: "", content: "", image_url: "" });
-                }}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                onClick={resetFormAndClose}
+                className="w-full sm:w-auto px-4 py-3 sm:py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 touch-manipulation min-h-[44px] sm:min-h-0"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-300"
+                className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-300 touch-manipulation min-h-[44px] sm:min-h-0"
               >
-                {submitting ? "Publicando..." : "Publicar"}
+                {submitting ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {editingId != null ? "Guardando..." : "Publicando..."}
+                  </span>
+                ) : (
+                  editingId != null
+                    ? "Guardar cambios"
+                    : "Publicar"
+                )}
               </button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200 bg-gray-50 flex gap-4 items-center">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden w-full min-w-0">
+        <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50">
+          <div className="relative w-full max-w-full sm:max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
             <input
-              type="text"
+              type="search"
+              enterKeyHint="search"
               placeholder="Buscar noticia..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full pl-10 pr-4 py-3 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-base sm:text-sm touch-manipulation"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
 
-        <div className="p-4 space-y-6">
+        <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
           {filteredNoticias.length === 0 ? (
             <p className="text-center text-gray-500 py-8">No se encontraron noticias.</p>
           ) : (
-            filteredNoticias.map((noticia) => (
-              <article key={noticia.id} className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-semibold text-gray-900">{noticia.title}</h3>
-                  <div className="flex items-center gap-4 flex-shrink-0 ml-4">
-                    <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                      {new Date(noticia.published_at).toLocaleDateString("es-VE")}
-                    </span>
-                    {!noticia.visible && (
-                      <span className="text-xs font-semibold bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Oculta</span>
-                    )}
-                    {isPrensa && (
-                      <div className="flex items-center gap-2">
-                        <button className="text-blue-600 hover:text-blue-800" title="Editar (próximamente)">
-                          <Edit2 className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => deleteNoticia(noticia.id)}
-                          className="text-red-600 hover:text-red-800"
-                          title="Eliminar"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+            filteredNoticias.map((noticia) => {
+              const expanded = isCardExpanded(noticia.id);
+              return (
+                <article
+                  key={noticia.id}
+                  className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow w-full min-w-0"
+                >
+                  <div className="flex gap-2 sm:gap-3 p-3 sm:p-4 bg-gray-50/80 border-b border-gray-100 items-start">
+                    <button
+                      type="button"
+                      onClick={() => toggleCard(noticia.id)}
+                      className="mt-0.5 p-2 -ml-1 rounded-lg text-gray-600 hover:bg-gray-200/80 touch-manipulation shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      aria-expanded={expanded}
+                      title={expanded ? "Minimizar" : "Maximizar"}
+                    >
+                      <ChevronDown
+                        className={`h-5 w-5 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+                        aria-hidden
+                      />
+                    </button>
+                    <div className="flex-1 min-w-0 text-left">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="text-xs text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded">
+                          {new Date(noticia.published_at).toLocaleDateString("es-VE")}
+                        </span>
+                        {!noticia.visible && (
+                          <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
+                            Oculta
+                          </span>
+                        )}
                       </div>
-                    )}
+                      <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug break-words">
+                        {noticia.title}
+                      </h3>
+                      {!expanded && (
+                        <p className="text-sm text-gray-600 mt-2 line-clamp-2 sm:line-clamp-3">
+                          {textoResumenNoticia(noticia.content)}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2 shrink-0">
+                      {noticia.visible && (
+                        <Link
+                          href={`/noticias/${noticia.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Ver público"
+                          className="text-xs font-medium text-red-600 hover:text-red-800 inline-flex items-center gap-1 py-2 px-1 rounded-lg touch-manipulation"
+                        >
+                          <span className="hidden sm:inline">Ver público</span>
+                          <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                        </Link>
+                      )}
+                      {isPrensa && (
+                        <div className="flex items-center gap-0.5 sm:gap-1">
+                          <button
+                            type="button"
+                            onClick={() => toggleVisible(noticia)}
+                            className={`p-2.5 rounded-lg touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center ${
+                              noticia.visible
+                                ? "text-green-600 hover:bg-green-50"
+                                : "text-gray-500 hover:bg-gray-100"
+                            }`}
+                            title={noticia.visible ? "Visible" : "Oculto"}
+                          >
+                            {noticia.visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => startEdit(noticia)}
+                            className="p-2.5 rounded-lg text-blue-600 hover:bg-blue-50 touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
+                            title="Editar"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(noticia.id)}
+                            className="p-2.5 rounded-lg text-red-600 hover:bg-red-50 touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
+                            title="Eliminar"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Mostrar imagen de la noticia */}
-                {noticia.image_url && (
-                  <div className="mb-4">
-                    <img
-                      src={noticia.image_url}
-                      alt={noticia.title}
-                      className="w-full max-h-96 object-cover rounded-lg border border-gray-200"
-                      onError={(e) => {
-                        e.target.src = "https://placehold.co/600x400/red/white?text=Imagen+no+disponible";
-                        e.target.alt = "Imagen no disponible";
-                      }}
-                    />
-                  </div>
-                )}
+                  {expanded && (
+                    <div className="p-3 sm:p-4 pt-2 sm:pt-3 min-w-0">
+                      {noticia.image_url && (
+                        <div className="mb-4 -mx-1 sm:mx-0">
+                          <img
+                            src={noticia.image_url}
+                            alt={noticia.title}
+                            className="w-full max-h-64 sm:max-h-96 object-cover rounded-lg border border-gray-200"
+                            onError={(e) => {
+                              e.target.src = "https://placehold.co/600x400/red/white?text=Imagen+no+disponible";
+                              e.target.alt = "Imagen no disponible";
+                            }}
+                          />
+                        </div>
+                      )}
 
-                <p className="text-gray-700 whitespace-pre-line">{noticia.content}</p>
-                {noticia.author_name && (
-                  <p className="text-xs text-gray-400 mt-3">Por: {noticia.author_name}</p>
-                )}
-              </article>
-            ))
+                      <NoticiaContenido blocks={parseContenidoNoticia(noticia.content).blocks} />
+                      {noticia.author_name && (
+                        <p className="text-xs text-gray-400 mt-3">Por: {noticia.author_name}</p>
+                      )}
+                    </div>
+                  )}
+                </article>
+              );
+            })
           )}
         </div>
       </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import sql from "@/lib/neon";
+import { textoResumenNoticia } from "@/lib/formateadorNoticia";
 import { Newspaper, FileDown, ShieldAlert, Phone, ChevronRight } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
@@ -73,19 +74,19 @@ export default async function Home() {
         </div>
 
         {/* Sección de Noticias */}
-        <section className="py-20 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-12">
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900 flex items-center">
-                  <Newspaper className="h-8 w-8 text-red-600 mr-3" />
-                  Noticias Destacadas
+        <section className="py-12 sm:py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-w-0">
+            <div className="flex items-center justify-between mb-8 sm:mb-12">
+              <div className="min-w-0">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex flex-wrap items-center gap-2 sm:gap-0">
+                  <Newspaper className="h-7 w-7 sm:h-8 sm:w-8 text-red-600 sm:mr-3 shrink-0" />
+                  <span>Noticias Destacadas</span>
                 </h2>
-                <p className="mt-2 text-gray-600">Entérate de las últimas acciones y comunicados oficiales.</p>
+                <p className="mt-2 text-sm sm:text-base text-gray-600">Entérate de las últimas acciones y comunicados oficiales.</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
               {newsList.length === 0 ? (
                 <div className="col-span-3 text-center py-12 text-gray-500 bg-white rounded-2xl border border-gray-100 shadow-sm">
                   No hay noticias publicadas en este momento.
@@ -106,15 +107,20 @@ export default async function Home() {
                         <Newspaper className="h-10 w-10 text-red-200" />
                       </div>
                     )}
-                    <div className="p-6 flex-grow flex flex-col">
+                    <div className="p-4 sm:p-6 flex-grow flex flex-col min-w-0">
                       <span className="text-xs font-semibold text-red-600 mb-2 uppercase tracking-wider">
                         {new Date(noticia.published_at).toLocaleDateString("es-VE", { year: 'numeric', month: 'long', day: 'numeric' })}
                       </span>
-                      <h3 className="text-xl font-bold text-gray-900 mb-3 leading-snug">{noticia.title}</h3>
-                      <p className="text-gray-600 mb-4 line-clamp-3 flex-grow">{noticia.content}</p>
-                      <button className="text-red-600 font-semibold hover:text-red-800 transition-colors inline-flex items-center text-sm">
-                        Leer más <ChevronRight className="h-4 w-4 ml-1" />
-                      </button>
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 leading-snug break-words">{noticia.title}</h3>
+                      <p className="text-sm sm:text-base text-gray-600 mb-4 line-clamp-3 flex-grow">
+                        {textoResumenNoticia(noticia.content)}
+                      </p>
+                      <Link
+                        href={`/noticias/${noticia.id}`}
+                        className="text-red-600 font-semibold hover:text-red-800 transition-colors inline-flex items-center text-sm py-2 -my-1 touch-manipulation min-h-[44px] sm:min-h-0"
+                      >
+                        Leer más <ChevronRight className="h-4 w-4 ml-1 shrink-0" />
+                      </Link>
                     </div>
                   </div>
                 ))
