@@ -88,13 +88,17 @@ export async function PUT(request, { params }) {
         ? patch.visible === true || patch.visible === 'true'
         : e.visible;
 
+    // Preservar estado existente; solo actualizarlo si se envía explícitamente
+    const estado = patch.estado !== undefined ? patch.estado : (e.estado ?? 'publicada');
+
     const result = await sql`
       UPDATE news
       SET
         title = ${title},
         content = ${content},
         image_url = ${image_url},
-        visible = ${visible}
+        visible = ${visible},
+        estado = ${estado}
       WHERE id = ${id}
       RETURNING *
     `;

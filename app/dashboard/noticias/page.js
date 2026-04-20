@@ -3,7 +3,7 @@
 import { useApp } from "@/context/AppContext";
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Edit2, Trash2, X, ExternalLink, Upload, Loader2, Eye, EyeOff, ChevronDown } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, X, ExternalLink, Upload, Loader2, Eye, EyeOff, ChevronDown, Clock, Calendar } from "lucide-react";
 import { parseContenidoNoticia, textoRawParaEdicion, textoResumenNoticia } from "@/lib/formateadorNoticia";
 import NoticiaContenido from "@/components/NoticiaContenido";
 
@@ -12,7 +12,29 @@ const emptyForm = () => ({
   content: "",
   imageFile: null,
   clearImage: false,
+  publicationMode: "now",    // 'now' | 'scheduled'
+  scheduledDate: "",          // valor del input datetime-local
 });
+
+// ─── Helpers de estado ───────────────────────────────────────────────────────
+
+const BADGE_CONFIG = {
+  publicada:  { label: "Publicada",  className: "text-green-800  bg-green-100  border-green-200"  },
+  programada: { label: "Programada", className: "text-blue-800   bg-blue-100   border-blue-200"   },
+  borrador:   { label: "Borrador",   className: "text-gray-700   bg-gray-100   border-gray-200"   },
+  archivada:  { label: "Archivada",  className: "text-amber-800  bg-amber-100  border-amber-200"  },
+};
+
+function EstadoBadge({ estado }) {
+  const cfg = BADGE_CONFIG[estado] ?? BADGE_CONFIG.borrador;
+  return (
+    <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded border ${cfg.className}`}>
+      {cfg.label}
+    </span>
+  );
+}
+
+// ─── Componente principal ────────────────────────────────────────────────────
 
 export default function NoticiasPage() {
   const { user, noticias, addNoticia, updateNoticia, deleteNoticia } = useApp();
@@ -24,18 +46,12 @@ export default function NoticiasPage() {
   const [imagePreview, setImagePreview] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  
-  // CAMBIO: Ahora por defecto todas las tarjetas están minimizadas (false)
-  // `id -> false` = minimizada; `true` = expandida
   const [cardExpanded, setCardExpanded] = useState({});
 
-  const isCardExpanded = (id) => cardExpanded[id] === true; // Solo true = expandida
+  const isCardExpanded = (id) => cardExpanded[id] === true;
 
   const toggleCard = (id) => {
-    setCardExpanded((prev) => ({
-      ...prev,
-      [id]: prev[id] === true ? false : true // Alterna entre true/false
-    }));
+    setCardExpanded((prev) => ({ ...prev, [id]: prev[id] === true ? false : true }));
   };
 
   const resetFormAndClose = () => {
@@ -59,6 +75,8 @@ export default function NoticiasPage() {
       content: textoRawParaEdicion(noticia.content),
       imageFile: null,
       clearImage: false,
+      publicationMode: "now",
+      scheduledDate: "",
     });
     setImagePreview(noticia.image_url || "");
     setIsFormOpen(true);
@@ -67,6 +85,19 @@ export default function NoticiasPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.content) return;
+
+    // Validar fecha programada antes de enviar
+    if (formData.publicationMode === "scheduled") {
+      if (!formData.scheduledDate) {
+        alert("Por favor selecciona una fecha y hora de publicación.");
+        return;
+      }
+      if (new Date(formData.scheduledDate) <= new Date()) {
+        alert("La fecha programada debe ser en el futuro.");
+        return;
+      }
+    }
+
     setSubmitting(true);
     const payload = new FormData();
     payload.append("title", formData.title.trim());
@@ -77,6 +108,11 @@ export default function NoticiasPage() {
     if (editingId != null) {
       payload.append("clear_image", formData.clearImage ? "true" : "false");
     }
+    // Agregar fecha programada solo si es nueva noticia en modo programado
+    if (editingId == null && formData.publicationMode === "scheduled" && formData.scheduledDate) {
+      payload.append("fecha_programada", new Date(formData.scheduledDate).toISOString());
+    }
+
     const ok =
       editingId != null
         ? await updateNoticia(editingId, payload)
@@ -103,7 +139,14 @@ export default function NoticiasPage() {
     await updateNoticia(noticia.id, { visible: !noticia.visible });
   };
 
-  const filteredNoticias = noticias.filter(n =>
+  // Valor mínimo para el datetime-local: ahora + 1 minuto
+  const minDatetime = () => {
+    const d = new Date(Date.now() + 60_000);
+    // Formato requerido por datetime-local: YYYY-MM-DDTHH:mm
+    return d.toISOString().slice(0, 16);
+  };
+
+  const filteredNoticias = noticias.filter((n) =>
     (n.title ?? "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -112,14 +155,23 @@ export default function NoticiasPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Noticias y Comunicados</h1>
         {isPrensa && (
-          <button
-            type="button"
-            onClick={openNewNoticia}
-            className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 sm:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition touch-manipulation min-h-[44px] sm:min-h-0"
-          >
-            <Plus className="h-4 w-4 mr-2 shrink-0" />
-            Nueva Noticia
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Link
+              href="/dashboard/noticias/programadas"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 sm:py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition touch-manipulation min-h-[44px] sm:min-h-0 text-sm font-medium"
+            >
+              <Clock className="h-4 w-4 mr-2 shrink-0" />
+              Programadas
+            </Link>
+            <button
+              type="button"
+              onClick={openNewNoticia}
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-3 sm:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition touch-manipulation min-h-[44px] sm:min-h-0"
+            >
+              <Plus className="h-4 w-4 mr-2 shrink-0" />
+              Nueva Noticia
+            </button>
+          </div>
         )}
       </div>
 
@@ -157,7 +209,7 @@ export default function NoticiasPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Imagen de portada(opcional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Imagen de portada (opcional)</label>
               <div className="relative border-2 border-dashed border-gray-200 rounded-xl p-4 sm:p-5 text-center hover:border-red-400 transition-colors group cursor-pointer min-h-[120px] flex flex-col items-center justify-center">
                 <input
                   type="file"
@@ -207,6 +259,59 @@ export default function NoticiasPage() {
               </div>
             )}
 
+            {/* ── Selector de publicación (solo en noticia nueva) ── */}
+            {editingId == null && (
+              <div className="border border-gray-200 rounded-xl p-4 bg-gray-50">
+                <p className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-red-500" />
+                  Publicación
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="publicationMode"
+                      value="now"
+                      checked={formData.publicationMode === "now"}
+                      onChange={() => setFormData((prev) => ({ ...prev, publicationMode: "now", scheduledDate: "" }))}
+                      className="accent-red-600"
+                    />
+                    <span className="text-sm text-gray-700">Publicar ahora</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="publicationMode"
+                      value="scheduled"
+                      checked={formData.publicationMode === "scheduled"}
+                      onChange={() => setFormData((prev) => ({ ...prev, publicationMode: "scheduled" }))}
+                      className="accent-red-600"
+                    />
+                    <span className="text-sm text-gray-700">Programar para más tarde</span>
+                  </label>
+                </div>
+
+                {formData.publicationMode === "scheduled" && (
+                  <div className="mt-3">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Fecha y hora de publicación
+                    </label>
+                    <input
+                      type="datetime-local"
+                      min={minDatetime()}
+                      value={formData.scheduledDate}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, scheduledDate: e.target.value }))}
+                      required={formData.publicationMode === "scheduled"}
+                      className="w-full sm:w-auto px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      La noticia se publicará automáticamente en la fecha seleccionada (±10 min por el cron).
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex flex-col-reverse sm:flex-row justify-end gap-2">
               <button
                 type="button"
@@ -223,12 +328,14 @@ export default function NoticiasPage() {
                 {submitting ? (
                   <span className="inline-flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    {editingId != null ? "Guardando..." : "Publicando..."}
+                    {editingId != null ? "Guardando..." : formData.publicationMode === "scheduled" ? "Programando..." : "Publicando..."}
                   </span>
                 ) : (
                   editingId != null
                     ? "Guardar cambios"
-                    : "Publicar"
+                    : formData.publicationMode === "scheduled"
+                      ? "Programar publicación"
+                      : "Publicar"
                 )}
               </button>
             </div>
@@ -257,6 +364,7 @@ export default function NoticiasPage() {
           ) : (
             filteredNoticias.map((noticia) => {
               const expanded = isCardExpanded(noticia.id);
+              const estadoNoticia = noticia.estado ?? "publicada";
               return (
                 <article
                   key={noticia.id}
@@ -280,9 +388,19 @@ export default function NoticiasPage() {
                         <span className="text-xs text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded">
                           {new Date(noticia.published_at).toLocaleDateString("es-VE")}
                         </span>
+                        <EstadoBadge estado={estadoNoticia} />
                         {!noticia.visible && (
-                          <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
+                          <span className="text-[10px] font-semibold uppercase tracking-wide text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">
                             Oculta
+                          </span>
+                        )}
+                        {estadoNoticia === "programada" && noticia.fecha_programada && (
+                          <span className="text-[10px] text-blue-700 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(noticia.fecha_programada).toLocaleString("es-VE", {
+                              day: "2-digit", month: "short", year: "numeric",
+                              hour: "2-digit", minute: "2-digit",
+                            })}
                           </span>
                         )}
                       </div>
@@ -296,7 +414,7 @@ export default function NoticiasPage() {
                       )}
                     </div>
                     <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1 sm:gap-2 shrink-0">
-                      {noticia.visible && (
+                      {estadoNoticia === "publicada" && noticia.visible && (
                         <Link
                           href={`/noticias/${noticia.id}`}
                           target="_blank"

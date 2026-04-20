@@ -11,7 +11,7 @@ export default async function Home() {
   let newsList = [];
   let formatsList = [];
   try {
-    newsList = await sql`SELECT * FROM news WHERE visible = true ORDER BY published_at DESC LIMIT 3`;
+    newsList = await sql`SELECT * FROM news WHERE visible = true AND (estado = 'publicada' OR estado IS NULL) ORDER BY published_at DESC LIMIT 3`;
     formatsList = await sql`SELECT * FROM formats ORDER BY name ASC LIMIT 6`;
   } catch (error) {
     console.error("Error fetching landing data", error);

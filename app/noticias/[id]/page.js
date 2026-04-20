@@ -9,14 +9,14 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
-  const rows = await sql`SELECT title FROM news WHERE id = ${id} AND visible = true`;
+  const rows = await sql`SELECT title FROM news WHERE id = ${id} AND visible = true AND (estado = 'publicada' OR estado IS NULL)`;
   if (rows.length === 0) return { title: "Noticia | Portal VEN 911" };
   return { title: `${rows[0].title} | Portal VEN 911` };
 }
 
 export default async function NoticiaPublicaPage({ params }) {
   const { id } = await params;
-  const rows = await sql`SELECT * FROM news WHERE id = ${id} AND visible = true`;
+  const rows = await sql`SELECT * FROM news WHERE id = ${id} AND visible = true AND (estado = 'publicada' OR estado IS NULL)`;
   if (rows.length === 0) notFound();
 
   const n = rows[0];
