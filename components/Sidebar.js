@@ -13,7 +13,8 @@ import {
   Table2,
   ChevronLeft,
   ChevronRight,
-  X
+  X,
+  Bell
 } from "lucide-react";
 
 export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }) {
@@ -25,6 +26,7 @@ export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileC
   const getLinks = () => {
     let links = [
       { name: "Inicio", path: "/dashboard", icon: Home },
+      { name: "Notificaciones", path: "/dashboard/notificaciones", icon: Bell },
       { name: "Noticias", path: "/dashboard/noticias", icon: Newspaper },
       { name: "Formatos", path: "/dashboard/formatos", icon: FileText },
     ];

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Readable } from 'stream';
 import { getFileFromDrive } from '@/lib/gdrive';
 import { verifyAuth } from '@/lib/auth';
 
@@ -30,16 +31,11 @@ export async function GET(request) {
   try {
     const { stream, mimeType, filename } = await getFileFromDrive(fileId);
 
-    // Convertir el stream de Node.js a ReadableStream de Web API
-    const webStream = new ReadableStream({
-      start(controller) {
-        stream.on('data', (chunk) => controller.enqueue(chunk));
-        stream.on('end', () => controller.close());
-        stream.on('error', (err) => controller.error(err));
-      },
-    });
+    // Convertir el stream de Node.js a ReadableStream de Web API de forma robusta
+    const webStream = Readable.toWeb(stream);
 
     return new Response(webStream, {
+
       headers: {
         'Content-Type': mimeType || 'application/octet-stream',
         'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,

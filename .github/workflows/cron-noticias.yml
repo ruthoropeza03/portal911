@@ -1,0 +1,21 @@
+name: Programar Publicación de Noticias
+
+on:
+  schedule:
+    # Se ejecuta cada 15 minutos
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Permite ejecución manual desde la pestaña Actions
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar al endpoint de publicación
+        run: |
+          # Reemplaza 'tu-app.vercel.app' por tu dominio real
+          # O usa ${{ secrets.APP_URL }} si lo configuras en secretos de GitHub
+          URL="${{ secrets.APP_URL || 'https://portal911.vercel.app' }}/api/cron/publicar-programadas"
+          echo "Ping a $URL"
+          curl -X GET "$URL" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -f || exit 1

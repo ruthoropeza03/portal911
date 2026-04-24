@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Toast from "@/components/Toast";
 
 const AppContext = createContext();
 
@@ -12,6 +13,8 @@ export function AppProvider({ children }) {
   const [reportes, setReportes] = useState([]);
   const [formatos, setFormatos] = useState([]);
   const [bitacora, setBitacora] = useState([]);
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [toastConfig, setToastConfig] = useState({ isVisible: false, title: '', message: '', type: 'info' });
   const [mounted, setMounted] = useState(false);
 
   const router = useRouter();
@@ -64,8 +67,21 @@ export function AppProvider({ children }) {
       if (['Coordinador', 'Gestión Humana', 'Administrador'].includes(user.role)) {
         cargarReportes();
       }
+
+      cargarNotificaciones(true);
     }
   }, [user, mounted]);
+
+  // Polling para notificaciones cada 30 segundos
+  useEffect(() => {
+    if (mounted && user) {
+      const interval = setInterval(() => {
+        verificarNuevasNotificaciones();
+      }, 30000); // 30 segundos
+
+      return () => clearInterval(interval);
+    }
+  }, [user, mounted, notificaciones]);
 
   const cargarNoticias = async () => {
     const data = await fetchAPI('/api/news');
@@ -90,6 +106,46 @@ export function AppProvider({ children }) {
   const cargarBitacora = async () => {
     const data = await fetchAPI('/api/news');
     if (data && !data.error) setBitacora(data);
+  };
+
+  const cargarNotificaciones = async (unreadOnly = true) => {
+    const data = await fetchAPI(`/api/notificaciones?unread=${unreadOnly}`);
+    if (data && !data.error) setNotificaciones(data);
+  };
+
+  const verificarNuevasNotificaciones = async () => {
+    const data = await fetchAPI(`/api/notificaciones?unread=true`);
+    if (data && !data.error && Array.isArray(data)) {
+      // Si hay notificaciones nuevas que no teníamos antes
+      const nuevas = data.filter(n => !notificaciones.find(hn => hn.id === n.id));
+      if (nuevas.length > 0) {
+        setNotificaciones(data);
+        mostrarToast(
+          nuevas[0].title, 
+          nuevas[0].message || 'Tienes nuevas notificaciones',
+          nuevas[0].type || 'info'
+        );
+      }
+    }
+  };
+
+  const marcarNotificacionLeida = async (id = null, markAllRead = false) => {
+    const data = await fetchAPI('/api/notificaciones', {
+      method: 'PUT',
+      body: JSON.stringify({ id, markAllRead })
+    });
+    if (data?.success) {
+      // Opcionalmente podemos recargar en vez de setear
+      // cargarNotificaciones(true); // O la página llamará esto
+    }
+  };
+
+  const mostrarToast = (title, message, type = 'info') => {
+    setToastConfig({ isVisible: true, title, message, type });
+  };
+
+  const cerrarToast = () => {
+    setToastConfig(prev => ({ ...prev, isVisible: false }));
   };
 
   const login = async (email, password) => {
@@ -255,8 +311,18 @@ export function AppProvider({ children }) {
         deleteUser,
         addFormato,
         deleteFormato,
+        notificaciones,
+        cargarNotificaciones,
+        marcarNotificacionLeida,
       }}
     >
+      <Toast 
+        isVisible={toastConfig.isVisible} 
+        title={toastConfig.title}
+        message={toastConfig.message}
+        type={toastConfig.type}
+        onClose={cerrarToast}
+      />
       {children}
     </AppContext.Provider>
   );
