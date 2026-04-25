@@ -24,22 +24,25 @@ export default function DashboardHome() {
             </h2>
           </div>
           <div className="p-4 space-y-4">
-            {noticias.length === 0 ? (
+            {noticias.filter(n => n.estado === 'publicada' && n.visible).length === 0 ? (
               <p className="text-gray-500 text-sm italic">No hay noticias publicadas.</p>
             ) : (
-              noticias.slice(0, 3).map((noticia) => (
-                <div key={noticia.id} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-medium text-gray-900">{noticia.title}</h3>
-                    <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
-                      {new Date(noticia.published_at).toLocaleDateString("es-VE")}
-                    </span>
+              noticias
+                .filter(n => n.estado === 'publicada' && n.visible)
+                .slice(0, 3)
+                .map((noticia) => (
+                  <div key={noticia.id} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-medium text-gray-900">{noticia.title}</h3>
+                      <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                        {new Date(noticia.published_at).toLocaleDateString("es-VE")}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                      {textoResumenNoticia(noticia.content)}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                    {textoResumenNoticia(noticia.content)}
-                  </p>
-                </div>
-              ))
+                ))
             )}
           </div>
         </div>
