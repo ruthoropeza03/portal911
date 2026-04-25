@@ -53,9 +53,11 @@ export async function POST(request) {
     const periodStart = formData.get('period_start'); // Formato YYYY-MM-DD
     const periodEnd = formData.get('period_end');     // Formato YYYY-MM-DD
 
-    if (!file || !quincena || !periodStart || !periodEnd) {
+    if (!file || !periodStart || !periodEnd) {
       return NextResponse.json({ error: 'Faltan datos (archivo o fechas)' }, { status: 400 });
     }
+
+    const quincenaVal = quincena ? parseInt(quincena) : 1;
 
     // Convert FormatData File to Buffer for Google API
     const bytes = await file.arrayBuffer();
@@ -72,14 +74,14 @@ export async function POST(request) {
     // Crear registro en BD (incluyendo mime_type y file_size)
     const result = await sql`
       INSERT INTO reports (department_id, user_id, period_start, period_end, quincena, file_name, file_drive_id, file_mime_type, file_size)
-      VALUES (${descId}, ${user.id}, ${periodStart}, ${periodEnd}, ${parseInt(quincena)}, ${file.name}, ${driveFileId}, ${file.type}, ${file.size})
+      VALUES (${descId}, ${user.id}, ${periodStart}, ${periodEnd}, ${quincenaVal}, ${file.name}, ${driveFileId}, ${file.type}, ${file.size})
       RETURNING *
     `;
 
     // Send notification
     await sql`
       INSERT INTO notifications (user_id, title, message, type)
-      SELECT id, 'Nuevo Reporte Quincenal', 'El usuario ' || ${user.name} || ' ha subido un reporte de la quincena ' || ${quincena}, 'info'
+      SELECT id, 'Nuevo Reporte de Gestión', 'El usuario ' || ${user.name} || ' ha subido un reporte del periodo ' || ${periodStart} || ' al ' || ${periodEnd}, 'info'
       FROM users
       WHERE role IN ('Administrador', 'Gestión Humana')
     `;

@@ -38,8 +38,13 @@ export async function GET(request) {
 
 export async function POST(request) {
   const user = verifyAuth(request);
-  if (!user || (user.department_name !== 'Televigilancia' && user.department_name !== 'Tecnologia')) {
-    return NextResponse.json({ error: 'Solo miembros del departamento de Tecnología pueden subir informes' }, { status: 403 });
+  if (!user) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  }
+
+  const isTechMember = user.department_name === 'Televigilancia' || user.department_name === 'Tecnologia';
+  if (!isTechMember) {
+    return NextResponse.json({ error: 'Solo miembros del departamento de Tecnología o Televigilancia pueden subir informes' }, { status: 403 });
   }
 
   try {
@@ -57,7 +62,7 @@ export async function POST(request) {
     const buffer = Buffer.from(bytes);
 
     // Subir a la carpeta de formatos/informes en Drive
-    const reportsFolderId = process.env.GOOGLE_DRIVE_TECHNICAL_REPORTS_FOLDER_ID;
+    const reportsFolderId = process.env.GOOGLE_DRIVE_TECHNICAL_REPORTS_FOLDER_ID || process.env.GOOGLE_DRIVE_REPORTS_FOLDER_ID;
     const driveFileId = await uploadFileToDrive(buffer, file.name, file.type, reportsFolderId);
 
     // Crear registro en BD

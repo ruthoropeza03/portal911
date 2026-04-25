@@ -44,9 +44,9 @@ export default function FormatosPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Formatos Oficiales</h1>
-          <p className="text-gray-500 text-sm mt-1">Biblioteca de plantillas y documentos institucionales.</p>
+        <div className="flex items-center space-x-3">
+          <FileText className="h-8 w-8 text-red-600" />
+          <h1 className="text-2xl font-bold text-gray-900">Formatos</h1>
         </div>
 
         {canManage && (

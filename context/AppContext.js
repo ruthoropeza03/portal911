@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/Toast";
 
@@ -14,13 +14,21 @@ export function AppProvider({ children }) {
   const [formatos, setFormatos] = useState([]);
   const [bitacora, setBitacora] = useState([]);
   const [notificaciones, setNotificaciones] = useState([]);
+  const [informesTecnicos, setInformesTecnicos] = useState([]);
   const [toastConfig, setToastConfig] = useState({ isVisible: false, title: '', message: '', type: 'info' });
   const [mounted, setMounted] = useState(false);
 
   const router = useRouter();
 
+  const logout = useCallback(() => {
+    localStorage.removeItem("ven911_token");
+    localStorage.removeItem("ven911_user");
+    setUser(null);
+    router.push("/login");
+  }, [router]);
+
   // Función genérica para fetch autenticado
-  const fetchAPI = async (endpoint, options = {}) => {
+  const fetchAPI = useCallback(async (endpoint, options = {}) => {
     const token = localStorage.getItem("ven911_token");
     const headers = {
       ...options.headers,
@@ -41,7 +49,7 @@ export function AppProvider({ children }) {
     }
 
     return response.json();
-  };
+  }, [logout]);
 
   // Cargar user del token al montar
   useEffect(() => {
@@ -64,8 +72,9 @@ export function AppProvider({ children }) {
         cargarBitacora();
       }
 
-      if (['Coordinador', 'Gestión Humana', 'Administrador'].includes(user.role)) {
+      if (['Coordinador', 'Gestión Humana', 'Administrador'].includes(user.role) || ['Televigilancia', 'Tecnologia'].includes(user.department_name)) {
         cargarReportes();
+        cargarInformesTecnicos();
       }
 
       cargarNotificaciones(true);
@@ -83,37 +92,42 @@ export function AppProvider({ children }) {
     }
   }, [user, mounted, notificaciones]);
 
-  const cargarNoticias = async () => {
+  const cargarNoticias = useCallback(async () => {
     const data = await fetchAPI('/api/news');
     if (data && !data.error) setNoticias(data);
-  };
+  }, [fetchAPI]);
 
-  const cargarFormatos = async () => {
+  const cargarFormatos = useCallback(async () => {
     const data = await fetchAPI('/api/formats');
     if (data && !data.error) setFormatos(data);
-  };
+  }, [fetchAPI]);
 
-  const cargarUsuarios = async () => {
+  const cargarUsuarios = useCallback(async () => {
     const data = await fetchAPI('/api/users');
     if (data && !data.error) setUsuarios(data);
-  };
+  }, [fetchAPI]);
 
-  const cargarReportes = async () => {
+  const cargarReportes = useCallback(async () => {
     const data = await fetchAPI('/api/reports');
     if (data && !data.error) setReportes(data);
-  };
+  }, [fetchAPI]);
 
-  const cargarBitacora = async () => {
+  const cargarBitacora = useCallback(async () => {
     const data = await fetchAPI('/api/news');
     if (data && !data.error) setBitacora(data);
-  };
+  }, [fetchAPI]);
 
-  const cargarNotificaciones = async (unreadOnly = true) => {
+  const cargarNotificaciones = useCallback(async (unreadOnly = true) => {
     const data = await fetchAPI(`/api/notificaciones?unread=${unreadOnly}`);
     if (data && !data.error) setNotificaciones(data);
-  };
+  }, [fetchAPI]);
+  
+  const cargarInformesTecnicos = useCallback(async () => {
+    const data = await fetchAPI('/api/technical-reports');
+    if (data && !data.error) setInformesTecnicos(data);
+  }, [fetchAPI]);
 
-  const verificarNuevasNotificaciones = async () => {
+  const verificarNuevasNotificaciones = useCallback(async () => {
     const data = await fetchAPI(`/api/notificaciones?unread=true`);
     if (data && !data.error && Array.isArray(data)) {
       // Si hay notificaciones nuevas que no teníamos antes
@@ -127,7 +141,7 @@ export function AppProvider({ children }) {
         );
       }
     }
-  };
+  }, [notificaciones, fetchAPI]);
 
   const marcarNotificacionLeida = async (id = null, markAllRead = false) => {
     const data = await fetchAPI('/api/notificaciones', {
@@ -169,15 +183,9 @@ export function AppProvider({ children }) {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("ven911_token");
-    localStorage.removeItem("ven911_user");
-    setUser(null);
-    router.push("/login");
-  };
 
   // Acciones Noticias
-  const addNoticia = async (noticia) => {
+  const addNoticia = useCallback(async (noticia) => {
     const body = noticia instanceof FormData ? noticia : JSON.stringify(noticia);
     const data = await fetchAPI('/api/news', {
       method: 'POST',
@@ -188,9 +196,9 @@ export function AppProvider({ children }) {
       return true;
     }
     return false;
-  };
+  }, [cargarNoticias, fetchAPI]);
 
-  const updateNoticia = async (id, noticia) => {
+  const updateNoticia = useCallback(async (id, noticia) => {
     const body = noticia instanceof FormData ? noticia : JSON.stringify(noticia);
     const data = await fetchAPI(`/api/news/${id}`, {
       method: 'PUT',
@@ -201,15 +209,15 @@ export function AppProvider({ children }) {
       return true;
     }
     return false;
-  };
+  }, [cargarNoticias, fetchAPI]);
 
-  const deleteNoticia = async (id) => {
+  const deleteNoticia = useCallback(async (id) => {
     await fetchAPI(`/api/news/${id}`, { method: 'DELETE' });
     cargarNoticias();
-  };
+  }, [cargarNoticias, fetchAPI]);
 
   // Acciones Reportes
-  const addReporte = async (formData) => {
+  const addReporte = useCallback(async (formData) => {
     const data = await fetchAPI('/api/reports', {
       method: 'POST',
       body: formData
@@ -219,9 +227,9 @@ export function AppProvider({ children }) {
       return true;
     }
     return false;
-  };
+  }, [cargarReportes, fetchAPI]);
 
-  const marcarReporteRevisado = async (id, status = 'reviewed', comment = '') => {
+  const marcarReporteRevisado = useCallback(async (id, status = 'reviewed', comment = '') => {
     const data = await fetchAPI(`/api/reports/${id}/review`, {
       method: 'PUT',
       body: JSON.stringify({ status, comment })
@@ -229,10 +237,22 @@ export function AppProvider({ children }) {
     if (data && !data.error) {
       await cargarReportes();
     }
-  };
+  }, [cargarReportes, fetchAPI]);
+
+  const addInformeTecnico = useCallback(async (formData) => {
+    const data = await fetchAPI('/api/technical-reports', {
+      method: 'POST',
+      body: formData
+    });
+    if (data && !data.error) {
+      await cargarInformesTecnicos();
+      return { success: true };
+    }
+    return { success: false, error: data?.error || 'Error al subir informe técnico' };
+  }, [cargarInformesTecnicos, fetchAPI]);
 
   // Acciones Usuarios
-  const addUser = async (userData) => {
+  const addUser = useCallback(async (userData) => {
     const data = await fetchAPI('/api/users', {
       method: 'POST',
       body: JSON.stringify(userData)
@@ -242,9 +262,9 @@ export function AppProvider({ children }) {
       return { success: true };
     }
     return { success: false, error: data?.error || 'Error al crear' };
-  };
+  }, [cargarUsuarios, fetchAPI]);
 
-  const editUser = async (id, userData) => {
+  const editUser = useCallback(async (id, userData) => {
     const data = await fetchAPI(`/api/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(userData)
@@ -254,19 +274,19 @@ export function AppProvider({ children }) {
       return { success: true };
     }
     return { success: false, error: data?.error || 'Error al editar' };
-  };
+  }, [cargarUsuarios, fetchAPI]);
 
-  const deleteUser = async (id) => {
+  const deleteUser = useCallback(async (id) => {
     const data = await fetchAPI(`/api/users/${id}`, { method: 'DELETE' });
     if (data && !data.error) {
       await cargarUsuarios();
       return { success: true };
     }
     return { success: false, error: data?.error || 'Error al eliminar' };
-  };
+  }, [cargarUsuarios, fetchAPI]);
 
   // Acciones Formatos
-  const addFormato = async (formData) => {
+  const addFormato = useCallback(async (formData) => {
     const data = await fetchAPI('/api/formats', {
       method: 'POST',
       body: formData
@@ -276,9 +296,9 @@ export function AppProvider({ children }) {
       return { success: true };
     }
     return { success: false, error: data?.error || 'Error al subir formato' };
-  };
+  }, [cargarFormatos, fetchAPI]);
 
-  const deleteFormato = async (id) => {
+  const deleteFormato = useCallback(async (id) => {
     const data = await fetchAPI('/api/formats', {
       method: 'DELETE',
       body: JSON.stringify({ id })
@@ -288,7 +308,7 @@ export function AppProvider({ children }) {
       return { success: true };
     }
     return { success: false, error: data?.error || 'Error al eliminar formato' };
-  };
+  }, [cargarFormatos, fetchAPI]);
 
   return (
     <AppContext.Provider
@@ -314,6 +334,10 @@ export function AppProvider({ children }) {
         notificaciones,
         cargarNotificaciones,
         marcarNotificacionLeida,
+        informesTecnicos,
+        cargarInformesTecnicos,
+        addInformeTecnico,
+        cargarReportes,
       }}
     >
       <Toast 

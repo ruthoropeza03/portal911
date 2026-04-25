@@ -3,7 +3,7 @@
 import { useApp } from "@/context/AppContext";
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Edit2, Trash2, X, ExternalLink, Upload, Loader2, Eye, EyeOff, ChevronDown, Clock, Calendar } from "lucide-react";
+import { Newspaper, Plus, Search, Edit2, Trash2, X, ExternalLink, Upload, Loader2, Eye, EyeOff, ChevronDown, Clock, Calendar } from "lucide-react";
 import { parseContenidoNoticia, textoRawParaEdicion, textoResumenNoticia } from "@/lib/formateadorNoticia";
 import NoticiaContenido from "@/components/NoticiaContenido";
 
@@ -19,10 +19,10 @@ const emptyForm = () => ({
 // ─── Helpers de estado ───────────────────────────────────────────────────────
 
 const BADGE_CONFIG = {
-  publicada:  { label: "Publicada",  className: "text-green-800  bg-green-100  border-green-200"  },
-  programada: { label: "Programada", className: "text-blue-800   bg-blue-100   border-blue-200"   },
-  borrador:   { label: "Borrador",   className: "text-gray-700   bg-gray-100   border-gray-200"   },
-  archivada:  { label: "Archivada",  className: "text-amber-800  bg-amber-100  border-amber-200"  },
+  publicada: { label: "Publicada", className: "text-green-800  bg-green-100  border-green-200" },
+  programada: { label: "Programada", className: "text-blue-800   bg-blue-100   border-blue-200" },
+  borrador: { label: "Borrador", className: "text-gray-700   bg-gray-100   border-gray-200" },
+  archivada: { label: "Archivada", className: "text-amber-800  bg-amber-100  border-amber-200" },
 };
 
 function EstadoBadge({ estado }) {
@@ -162,7 +162,10 @@ export default function NoticiasPage() {
   return (
     <div className="space-y-4 sm:space-y-6 w-full min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Noticias y Comunicados</h1>
+        <div className="flex items-center space-x-3">
+          < Newspaper className="h-8 w-8 text-red-600" />
+          <h1 className="text-2xl font-bold text-gray-900">Noticias y Comunicados</h1>
+        </div>
         {isPrensa && (
           <div className="flex flex-col sm:flex-row gap-2">
             <Link
@@ -440,11 +443,10 @@ export default function NoticiasPage() {
                           <button
                             type="button"
                             onClick={() => toggleVisible(noticia)}
-                            className={`p-2.5 rounded-lg touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center ${
-                              noticia.visible
-                                ? "text-green-600 hover:bg-green-50"
-                                : "text-gray-500 hover:bg-gray-100"
-                            }`}
+                            className={`p-2.5 rounded-lg touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center ${noticia.visible
+                              ? "text-green-600 hover:bg-green-50"
+                              : "text-gray-500 hover:bg-gray-100"
+                              }`}
                             title={noticia.visible ? "Visible" : "Oculto"}
                           >
                             {noticia.visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}

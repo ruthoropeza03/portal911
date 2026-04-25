@@ -5,32 +5,20 @@ import { useState, useEffect } from "react";
 import { UploadCloud, CheckCircle2, AlertCircle, Server, FileText, Download } from "lucide-react";
 
 export default function InformesTecnicosPage() {
-  const { user } = useApp();
-
-  const [informes, setInformes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user, informesTecnicos, cargarInformesTecnicos, addInformeTecnico } = useApp();
+  const [loading, setLoading] = useState(!informesTecnicos.length);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState(null); // { type: 'success'|'error', msg }
 
-  const fetchInformes = async () => {
-    try {
-      const res = await fetch("/api/technical-reports");
-      if (res.ok) {
-        const data = await res.json();
-        setInformes(data);
-      }
-    } catch (error) {
-      console.error("Error al cargar informes", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchInformes();
+    const init = async () => {
+      await cargarInformesTecnicos();
+      setLoading(false);
+    };
+    init();
   }, []);
 
   if (user?.department_name !== "Televigilancia" && user?.department_name !== "Tecnologia" && user?.role !== "Administrador") {
@@ -57,22 +45,17 @@ export default function InformesTecnicosPage() {
     setStatus(null);
 
     try {
-      const res = await fetch("/api/technical-reports", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (res.ok) {
+      const result = await addInformeTecnico(formData);
+ 
+      if (result.success) {
         setStatus({ type: "success", msg: "Informe técnico subido correctamente." });
         setTitle("");
         setDescription("");
         setFile(null);
         const input = document.getElementById("file-input");
         if (input) input.value = "";
-        fetchInformes();
       } else {
-        const data = await res.json();
-        setStatus({ type: "error", msg: data.error || "Error al subir el informe." });
+        setStatus({ type: "error", msg: result.error || "Error al subir el informe." });
       }
     } catch (error) {
       setStatus({ type: "error", msg: "Error al subir el informe. Verifica tu conexión." });
@@ -98,8 +81,8 @@ export default function InformesTecnicosPage() {
 
           {status && (
             <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${status.type === "success"
-                ? "bg-green-50 border border-green-200 text-green-700"
-                : "bg-red-50 border border-red-200 text-red-700"
+              ? "bg-green-50 border border-green-200 text-green-700"
+              : "bg-red-50 border border-red-200 text-red-700"
               }`}>
               {status.type === "success"
                 ? <CheckCircle2 className="h-5 w-5 flex-shrink-0 mt-0.5" />
@@ -185,13 +168,13 @@ export default function InformesTecnicosPage() {
               <div className="flex justify-center items-center h-32">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
               </div>
-            ) : informes.length === 0 ? (
+            ) : informesTecnicos.length === 0 ? (
               <div className="text-center py-10 text-gray-500">
                 No hay informes técnicos registrados.
               </div>
             ) : (
               <ul className="space-y-4">
-                {informes.map((inf) => (
+                {informesTecnicos.map((inf) => (
                   <li key={inf.id} className="p-4 border border-gray-100 rounded-lg bg-gray-50 hover:bg-white transition-colors group">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">

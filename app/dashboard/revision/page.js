@@ -39,9 +39,6 @@ export default function RevisionPage() {
                     <p className="text-xs text-gray-500">{reporte.department_name || 'N/A'}</p>
                   </div>
                 </div>
-                <div className="bg-gray-100 rounded-md px-2 py-1 text-xs font-semibold text-gray-600">
-                  Q{reporte.quincena}
-                </div>
               </div>
               
               <div className="border-t border-gray-100 pt-3">
@@ -115,8 +112,7 @@ export default function RevisionPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 font-medium">Q{reporte.quincena} - {new Date(reporte.period_start).getFullYear()}</div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-sm text-gray-900 font-medium">
                         {new Date(reporte.period_start).toLocaleDateString()} al {new Date(reporte.period_end).toLocaleDateString()}
                       </div>
                     </td>

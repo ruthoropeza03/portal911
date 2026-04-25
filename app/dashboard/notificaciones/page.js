@@ -29,16 +29,12 @@ export default function NotificacionesPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 border-l-4 border-red-600 pl-3">
-            Centro de Notificaciones
-          </h1>
-          <p className="text-gray-500 mt-1 pl-4">
-            Historial de alertas y avisos del sistema
-          </p>
+        <div className="flex items-center space-x-3">
+          < Bell className="h-8 w-8 text-red-600" />
+          <h1 className="text-2xl font-bold text-gray-900">notificaciones</h1>
         </div>
         <div className="mt-4 sm:mt-0">
-          <button 
+          <button
             onClick={handleMarkAllRead}
             disabled={loading || notificaciones.filter(n => !n.is_read).length === 0}
             className="flex items-center px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
@@ -53,8 +49,8 @@ export default function NotificacionesPage() {
         {notificaciones && notificaciones.length > 0 ? (
           <ul className="divide-y divide-gray-100">
             {notificaciones.map((notificacion) => (
-              <li 
-                key={notificacion.id} 
+              <li
+                key={notificacion.id}
                 className={`p-4 sm:px-6 transition-colors hover:bg-gray-50 ${!notificacion.is_read ? 'bg-red-50/30' : ''}`}
               >
                 <div className="flex items-start justify-between">
