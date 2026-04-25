@@ -121,6 +121,17 @@ export async function POST(request) {
       RETURNING *
     `;
 
+    // Send notification to Admin users about the new news item
+    if (estado === 'publicada' || estado === 'programada') {
+      const actionText = estado === 'publicada' ? 'publicado' : 'programado';
+      await sql`
+        INSERT INTO notifications (user_id, title, message, type)
+        SELECT id, 'Nueva Noticia', 'El usuario ' || ${user.name} || ' ha ' || ${actionText} || ' una noticia: ' || ${title}, 'info'
+        FROM users
+        WHERE role = 'Administrador'
+      `;
+    }
+
     return NextResponse.json(result[0], { status: 201 });
   } catch (error) {
     console.error(error);

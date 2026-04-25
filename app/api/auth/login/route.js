@@ -16,7 +16,12 @@ export async function POST(request) {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
 
-    const users = await sql`SELECT * FROM users WHERE email = ${cleanEmail} AND active = true`;
+    const users = await sql`
+      SELECT u.*, d.name as department_name 
+      FROM users u
+      LEFT JOIN departments d ON u.department_id = d.id
+      WHERE u.email = ${cleanEmail} AND u.active = true
+    `;
 
     if (users.length === 0) {
       return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
@@ -38,7 +43,8 @@ export async function POST(request) {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
+      department_name: user.department_name
     };
 
     const token = signToken(payload);

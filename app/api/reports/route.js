@@ -76,6 +76,13 @@ export async function POST(request) {
       RETURNING *
     `;
 
+    // Send notification
+    await sql`
+      INSERT INTO notifications (user_id, title, message, type)
+      SELECT id, 'Nuevo Reporte Quincenal', 'El usuario ' || ${user.name} || ' ha subido un reporte de la quincena ' || ${quincena}, 'info'
+      FROM users
+      WHERE role IN ('Administrador', 'Gestión Humana')
+    `;
 
     return NextResponse.json(result[0], { status: 201 });
   } catch (error) {

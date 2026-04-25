@@ -1,10 +1,10 @@
 "use client";
 
 import { useApp } from "@/context/AppContext";
-import { CheckCircle, Clock, Download, FileText, User } from "lucide-react";
+import { CheckCircle, Clock, Download, FileText, User, Calendar } from "lucide-react";
 
 export default function RevisionPage() {
-  const { user, reportes, marcarReporteRevisado } = useApp();
+  const { user, reportes } = useApp();
 
   if (user?.role !== "Gestión Humana" && user?.role !== "Administrador") {
     return <div className="p-4 text-red-600 font-medium">No tienes permisos para ver esta página.</div>;
@@ -14,12 +14,64 @@ export default function RevisionPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Revisión de Reportes</h1>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Reportes Recibidos</h1>
           <p className="text-gray-500 text-sm mt-1">Supervisión y control de informes quincenales por departamento.</p>
         </div>
       </div>
       
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Vista Móvil (Tarjetas) */}
+      <div className="md:hidden space-y-4">
+        {reportes.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center flex flex-col items-center">
+            <FileText className="h-8 w-8 text-gray-300 mb-2" />
+            <p className="text-gray-500 font-medium">No hay reportes para visualizar en este momento.</p>
+          </div>
+        ) : (
+          reportes.map((reporte) => (
+            <div key={reporte.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center space-x-3">
+                  <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+                    <User className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm">{reporte.user_name}</h3>
+                    <p className="text-xs text-gray-500">{reporte.department_name || 'N/A'}</p>
+                  </div>
+                </div>
+                <div className="bg-gray-100 rounded-md px-2 py-1 text-xs font-semibold text-gray-600">
+                  Q{reporte.quincena}
+                </div>
+              </div>
+              
+              <div className="border-t border-gray-100 pt-3">
+                <div className="flex items-center text-xs text-gray-500 mb-2">
+                  <Calendar className="h-3.5 w-3.5 mr-1" />
+                  {new Date(reporte.period_start).toLocaleDateString()} al {new Date(reporte.period_end).toLocaleDateString()}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-800 truncate max-w-[200px]">{reporte.file_name}</span>
+                  <a 
+                    href={`/api/drive/download?fileId=${reporte.file_drive_id}&public=1`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors flex-shrink-0"
+                    title="Descargar Informe"
+                  >
+                    <Download className="h-5 w-5" />
+                  </a>
+                </div>
+                <div className="mt-2 text-[10px] text-gray-400 text-right">
+                  Subido: {new Date(reporte.created_at).toLocaleString("es-VE")}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Vista Escritorio (Tabla) */}
+      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -36,21 +88,15 @@ export default function RevisionPage() {
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Fecha Subida
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Estado
-                </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
               {reportes.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center">
+                  <td colSpan="4" className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center space-y-2 text-gray-400">
                       <FileText className="h-8 w-8 opacity-20" />
-                      <p className="text-gray-500 font-medium">No hay reportes para revisar en este momento.</p>
+                      <p className="text-gray-500 font-medium">No hay reportes para visualizar en este momento.</p>
                     </div>
                   </td>
                 </tr>
@@ -76,7 +122,7 @@ export default function RevisionPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex flex-col">
-                        <span className="text-gray-900 font-medium truncate max-w-[150px]">{reporte.file_name}</span>
+                        <span className="text-gray-900 font-medium truncate max-w-[200px]">{reporte.file_name}</span>
                         <a 
                           href={`/api/drive/download?fileId=${reporte.file_drive_id}&public=1`}
                           target="_blank"
@@ -90,51 +136,6 @@ export default function RevisionPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(reporte.created_at).toLocaleString("es-VE")}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {reporte.status === 'reviewed' ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-100">
-                          <CheckCircle className="w-3 h-3 mr-1" /> Revisado
-                        </span>
-                      ) : reporte.status === 'rejected' ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-100">
-                          <Clock className="w-3 h-3 mr-1" /> Rechazado
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-100">
-                          <Clock className="w-3 h-3 mr-1" /> Pendiente
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {reporte.status === 'pending' && (
-                        <div className="flex justify-end space-x-3">
-                          <button
-                            onClick={() => {
-                              if(confirm('¿Confirmar que el reporte ha sido revisado satisfactoriamente?')) {
-                                marcarReporteRevisado(reporte.id, 'reviewed')
-                              }
-                            }}
-                            className="text-green-600 hover:text-green-800 transition-colors"
-                          >
-                            Aprobar
-                          </button>
-                          <button
-                            onClick={() => {
-                              const note = prompt('Motivo del rechazo:');
-                              if(note !== null) marcarReporteRevisado(reporte.id, 'rejected', note)
-                            }}
-                            className="text-red-600 hover:text-red-800 transition-colors"
-                          >
-                            Rechazar
-                          </button>
-                        </div>
-                      )}
-                      {reporte.status !== 'pending' && (
-                        <span className="text-xs text-gray-400 italic">
-                          Por: {reporte.reviewer_name || 'Sistema'}
-                        </span>
-                      )}
-                    </td>
                   </tr>
                 ))
               )}
@@ -145,4 +146,3 @@ export default function RevisionPage() {
     </div>
   );
 }
-

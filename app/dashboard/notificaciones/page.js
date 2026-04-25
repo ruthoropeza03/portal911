@@ -65,23 +65,23 @@ export default function NotificacionesPage() {
                       </div>
                     </div>
                     <div className="ml-4 flex-1">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
                         <p className={`text-sm font-medium ${!notificacion.is_read ? 'text-gray-900' : 'text-gray-600'}`}>
                           {notificacion.title}
                         </p>
-                        <p className="text-xs text-gray-400 flex items-center">
+                        <p className="text-xs text-gray-400 flex items-center flex-shrink-0">
                           <Clock className="h-3 w-3 mr-1" />
                           {new Date(notificacion.created_at).toLocaleString('es-VE')}
                         </p>
                       </div>
-                      <div className="mt-1 flex items-center justify-between">
+                      <div className="mt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
                         <p className={`text-sm ${!notificacion.is_read ? 'text-gray-700' : 'text-gray-500'}`}>
                           {notificacion.message}
                         </p>
                         {!notificacion.is_read && (
                           <button
                             onClick={() => handleMarkRead(notificacion.id)}
-                            className="ml-4 flex-shrink-0 text-xs font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors"
+                            className="flex-shrink-0 self-start sm:self-auto text-xs font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors"
                           >
                             Marcar leída
                           </button>

@@ -14,7 +14,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Bell
+  Bell,
+  Server
 } from "lucide-react";
 
 export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }) {
@@ -33,6 +34,10 @@ export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileC
 
     if (user.role === "Coordinador") {
       links.push({ name: "Subir Reportes", path: "/dashboard/reportes", icon: UploadCloud });
+    }
+
+    if (user.department_name === "Televigilancia" || user.department_name === "Tecnologia") {
+      links.push({ name: "Informes Técnicos", path: "/dashboard/informes-tecnicos", icon: Server });
     }
 
     if (user.role === "Gestión Humana") {
@@ -77,8 +82,8 @@ export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileC
               key={link.path}
               href={link.path}
               className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors group ${isActive
-                  ? "bg-red-50 text-red-700"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                ? "bg-red-50 text-red-700"
+                : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                 } ${isCollapsed ? 'justify-center' : ''}`}
               title={isCollapsed ? link.name : ""}
             >
@@ -148,8 +153,8 @@ export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileC
                 href={link.path}
                 onClick={onMobileClose}
                 className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${isActive
-                    ? "bg-red-50 text-red-700"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  ? "bg-red-50 text-red-700"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                   }`}
               >
                 <Icon

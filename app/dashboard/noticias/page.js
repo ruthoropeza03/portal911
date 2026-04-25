@@ -110,7 +110,15 @@ export default function NoticiasPage() {
     }
     // Agregar fecha programada solo si es nueva noticia en modo programado
     if (editingId == null && formData.publicationMode === "scheduled" && formData.scheduledDate) {
-      payload.append("fecha_programada", new Date(formData.scheduledDate).toISOString());
+      // datetime-local devuelve hora local sin offset. Construimos un ISO con el
+      // offset real del navegador para que NeonDB almacene el instante correcto.
+      const localDate = new Date(formData.scheduledDate);
+      const offsetMs = localDate.getTimezoneOffset() * 60_000;
+      const localISO = new Date(localDate.getTime() - offsetMs).toISOString().slice(0, 16) +
+        (localDate.getTimezoneOffset() <= 0
+          ? "+" + String(Math.floor(-localDate.getTimezoneOffset() / 60)).padStart(2, "0") + ":" + String((-localDate.getTimezoneOffset()) % 60).padStart(2, "0")
+          : "-" + String(Math.floor(localDate.getTimezoneOffset() / 60)).padStart(2, "0") + ":" + String(localDate.getTimezoneOffset() % 60).padStart(2, "0"));
+      payload.append("fecha_programada", localISO);
     }
 
     const ok =
@@ -142,8 +150,9 @@ export default function NoticiasPage() {
   // Valor mínimo para el datetime-local: ahora + 1 minuto
   const minDatetime = () => {
     const d = new Date(Date.now() + 60_000);
-    // Formato requerido por datetime-local: YYYY-MM-DDTHH:mm
-    return d.toISOString().slice(0, 16);
+    // Formato requerido por datetime-local: YYYY-MM-DDTHH:mm (hora local, no UTC)
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
 
   const filteredNoticias = noticias.filter((n) =>
