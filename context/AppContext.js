@@ -285,6 +285,35 @@ export function AppProvider({ children }) {
     return { success: false, error: data?.error || 'Error al eliminar' };
   }, [cargarUsuarios, fetchAPI]);
 
+  const updateMyProfile = useCallback(async (profileData) => {
+    const payload = {
+      name: profileData?.name?.trim(),
+      email: profileData?.email?.trim()?.toLowerCase(),
+      ...(profileData?.password ? { password: profileData.password } : {})
+    };
+
+    const data = await fetchAPI('/api/profile', {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+
+    if (data && !data.error) {
+      const updatedUser = {
+        ...user,
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        department_name: data.department_name ?? user?.department_name ?? null
+      };
+
+      setUser(updatedUser);
+      localStorage.setItem("ven911_user", JSON.stringify(updatedUser));
+      return { success: true, user: updatedUser };
+    }
+
+    return { success: false, error: data?.error || 'Error al actualizar perfil' };
+  }, [fetchAPI, user]);
+
   // Acciones Formatos
   const addFormato = useCallback(async (formData) => {
     const data = await fetchAPI('/api/formats', {
@@ -329,6 +358,7 @@ export function AppProvider({ children }) {
         addUser,
         editUser,
         deleteUser,
+        updateMyProfile,
         addFormato,
         deleteFormato,
         notificaciones,

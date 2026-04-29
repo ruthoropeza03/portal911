@@ -15,7 +15,8 @@ import {
   ChevronRight,
   X,
   Bell,
-  Server
+  Server,
+  Settings
 } from "lucide-react";
 
 export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }) {
@@ -30,6 +31,7 @@ export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileC
       { name: "Notificaciones", path: "/dashboard/notificaciones", icon: Bell },
       { name: "Noticias", path: "/dashboard/noticias", icon: Newspaper },
       { name: "Formatos", path: "/dashboard/formatos", icon: FileText },
+      { name: "Configuración", path: "/dashboard/configuracion", icon: Settings },
     ];
 
     if (user.role === "Coordinador") {
