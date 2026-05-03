@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import sql from '@/lib/neon';
 import { verifyAuth } from '@/lib/auth';
 import { uploadFileToDrive, deleteFileFromDrive } from '@/lib/gdrive';
+import { logAudit } from '@/lib/auditLog';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,6 +64,16 @@ export async function POST(request) {
       VALUES (${name}, ${description}, ${driveFileId}, ${fileName}, NOW())
       RETURNING *
     `;
+    logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      action: 'UPLOAD_FORMAT',
+      module: 'Formatos',
+      description: `Subió el formato '${name}' (${fileName || 'sin nombre de archivo'})`,
+      request,
+    });
+
     return NextResponse.json(result[0], { status: 201 });
   } catch (error) {
     console.error('Error subiendo formato:', error);
@@ -110,6 +121,16 @@ export async function DELETE(request) {
     if (driveId && !driveId.startsWith('fake-')) {
       await deleteFileFromDrive(driveId);
     }
+
+    logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      action: 'DELETE_FORMAT',
+      module: 'Formatos',
+      description: `Eliminó el formato ID ${id}`,
+      request,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

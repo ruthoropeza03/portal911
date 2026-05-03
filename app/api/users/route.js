@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import sql from '@/lib/neon';
 import { verifyAuth } from '@/lib/auth';
+import { logAudit } from '@/lib/auditLog';
 
 export async function GET(request) {
   const user = verifyAuth(request);
@@ -41,6 +42,16 @@ export async function POST(request) {
       RETURNING id, name, email, role
     `;
 
+
+    logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      action: 'CREATE_USER',
+      module: 'Usuarios',
+      description: `Creó el usuario '${name}' con rol '${role}'`,
+      request,
+    });
 
     return NextResponse.json(result[0], { status: 201 });
   } catch (error) {

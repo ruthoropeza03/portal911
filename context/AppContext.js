@@ -113,8 +113,8 @@ export function AppProvider({ children }) {
   }, [fetchAPI]);
 
   const cargarBitacora = useCallback(async () => {
-    const data = await fetchAPI('/api/news');
-    if (data && !data.error) setBitacora(data);
+    const data = await fetchAPI('/api/audit-log?limit=200');
+    if (data && !data.error) setBitacora(data.logs ?? []);
   }, [fetchAPI]);
 
   const cargarNotificaciones = useCallback(async (unreadOnly = true) => {
@@ -368,6 +368,8 @@ export function AppProvider({ children }) {
         cargarInformesTecnicos,
         addInformeTecnico,
         cargarReportes,
+        cargarBitacora,
+        fetchAPI,
       }}
     >
       <Toast 

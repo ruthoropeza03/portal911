@@ -3,6 +3,7 @@ import sql from '@/lib/neon';
 import { verifyAuth } from '@/lib/auth';
 import { construirBloquesNoticia, serializarNoticia } from '@/lib/formateadorNoticia';
 import { uploadFileToDrive } from '@/lib/gdrive';
+import { logAudit } from '@/lib/auditLog';
 
 
 export async function GET(request) {
@@ -131,6 +132,16 @@ export async function POST(request) {
         WHERE role = 'Administrador'
       `;
     }
+
+    logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      action: 'CREATE_NEWS',
+      module: 'Noticias',
+      description: `${estado === 'programada' ? 'Programó' : 'Creó'} la noticia '${title}'`,
+      request,
+    });
 
     return NextResponse.json(result[0], { status: 201 });
   } catch (error) {

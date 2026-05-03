@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import sql from '@/lib/neon';
 import { signToken } from '@/lib/auth';
+import { logAudit } from '@/lib/auditLog';
 
 const ALLOWED_ROLES = ['Coordinador', 'Prensa', 'Gestión Humana', 'Administrador'];
 
@@ -48,6 +49,16 @@ export async function POST(request) {
     };
 
     const token = signToken(payload);
+
+    logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      action: 'LOGIN',
+      module: 'Autenticación',
+      description: `Inicio de sesión exitoso (${user.email})`,
+      request,
+    });
 
     return NextResponse.json({
       user: payload,

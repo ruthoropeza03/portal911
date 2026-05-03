@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import sql from "@/lib/neon";
 import { verifyAuth } from "@/lib/auth";
+import { logAudit } from "@/lib/auditLog";
 
 export async function GET(request) {
   const userAuth = verifyAuth(request);
@@ -75,6 +76,16 @@ export async function PUT(request) {
       WHERE u.id = ${userAuth.id}
       LIMIT 1
     `;
+
+    logAudit({
+      userId: userAuth.id,
+      userName: name,
+      userRole: userAuth.role,
+      action: 'UPDATE_PROFILE',
+      module: 'Perfil',
+      description: `Actualizó su perfil (nombre: '${name}', email: '${email}')`,
+      request,
+    });
 
     return NextResponse.json({
       ...query[0],

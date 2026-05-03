@@ -3,6 +3,7 @@ import sql from '@/lib/neon';
 import { verifyAuth } from '@/lib/auth';
 import { construirBloquesNoticia, serializarNoticia } from '@/lib/formateadorNoticia';
 import { deleteFileFromDrive, uploadFileToDrive } from '@/lib/gdrive';
+import { logAudit } from '@/lib/auditLog';
 
 const CAN_MANAGE_NEWS = ['Prensa', 'Administrador'];
 
@@ -103,6 +104,16 @@ export async function PUT(request, { params }) {
       RETURNING *
     `;
 
+    logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      action: 'UPDATE_NEWS',
+      module: 'Noticias',
+      description: `Actualizó la noticia ID ${id} ('${title}')`,
+      request,
+    });
+
     return NextResponse.json(result[0]);
   } catch (error) {
     console.error(error);
@@ -119,7 +130,7 @@ export async function DELETE(request, { params }) {
 
   try {
     const { id } = await params;
-    const rows = await sql`SELECT image_url FROM news WHERE id = ${id} LIMIT 1`;
+    const rows = await sql`SELECT image_url, title FROM news WHERE id = ${id} LIMIT 1`;
     await sql`DELETE FROM news WHERE id = ${id}`;
     if (rows.length > 0) {
       const driveId = extractDriveId(rows[0].image_url);
@@ -127,6 +138,15 @@ export async function DELETE(request, { params }) {
         await deleteFileFromDrive(driveId);
       }
     }
+    logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      action: 'DELETE_NEWS',
+      module: 'Noticias',
+      description: `Eliminó la noticia ID ${id} ('${rows[0]?.title ?? ''}')`,
+      request,
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Error al eliminar noticia' }, { status: 500 });

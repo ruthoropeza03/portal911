@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import sql from '@/lib/neon';
 import { verifyAuth } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
+import { logAudit } from '@/lib/auditLog';
 
 export async function PUT(request, { params }) {
   const userAuth = verifyAuth(request);
@@ -38,9 +39,15 @@ export async function PUT(request, { params }) {
       `;
     }
 
-    if (query.length === 0) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
-    }
+    logAudit({
+      userId: userAuth.id,
+      userName: userAuth.name,
+      userRole: userAuth.role,
+      action: 'UPDATE_USER',
+      module: 'Usuarios',
+      description: `Actualizó el usuario ID ${id} ('${query[0]?.name}')`,
+      request,
+    });
 
     return NextResponse.json(query[0]);
   } catch (error) {
@@ -56,7 +63,18 @@ export async function DELETE(request, { params }) {
 
   try {
     const { id } = await params;
+    // Fetch name before deletion for the log
+    const target = await sql`SELECT name FROM users WHERE id = ${id} LIMIT 1`;
     await sql`DELETE FROM users WHERE id = ${id}`;
+    logAudit({
+      userId: userAuth.id,
+      userName: userAuth.name,
+      userRole: userAuth.role,
+      action: 'DELETE_USER',
+      module: 'Usuarios',
+      description: `Eliminó el usuario ID ${id} ('${target[0]?.name ?? 'desconocido'}')`,
+      request,
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Error al eliminar usuario' }, { status: 500 });

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import sql from '@/lib/neon';
 import { verifyAuth } from '@/lib/auth';
 import { uploadFileToDrive } from '@/lib/gdrive';
+import { logAudit } from '@/lib/auditLog';
 
 export async function GET(request) {
   const user = verifyAuth(request);
@@ -85,6 +86,16 @@ export async function POST(request) {
       FROM users
       WHERE role IN ('Administrador', 'Gestión Humana')
     `;
+
+    logAudit({
+      userId: user.id,
+      userName: user.name,
+      userRole: user.role,
+      action: 'UPLOAD_REPORT',
+      module: 'Reportes',
+      description: `Subió el reporte '${file.name}' para el periodo ${periodStart} al ${periodEnd} (quincena ${quincenaVal})`,
+      request,
+    });
 
     return NextResponse.json(result[0], { status: 201 });
   } catch (error) {
