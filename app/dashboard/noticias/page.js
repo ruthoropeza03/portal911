@@ -1,11 +1,13 @@
 "use client";
 
 import { useApp } from "@/context/AppContext";
-import { useState } from "react";
+import { useState, useMemo, useRef } from "react";
 import Link from "next/link";
-import { Newspaper, Plus, Search, Edit2, Trash2, X, ExternalLink, Upload, Loader2, Eye, EyeOff, ChevronDown, Clock, Calendar } from "lucide-react";
+import { Newspaper, Plus, Search, Edit2, Trash2, X, ExternalLink, Upload, Loader2, Eye, EyeOff, ChevronDown, Clock, Calendar, Filter } from "lucide-react";
 import { parseContenidoNoticia, textoRawParaEdicion, textoResumenNoticia } from "@/lib/formateadorNoticia";
 import NoticiaContenido from "@/components/NoticiaContenido";
+
+const PAGE_SIZE = 10;
 
 const emptyForm = () => ({
   title: "",
@@ -45,8 +47,23 @@ export default function NoticiasPage() {
   const [formData, setFormData] = useState(emptyForm);
   const [imagePreview, setImagePreview] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [estadoFilter, setEstadoFilter] = useState("");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [submitting, setSubmitting] = useState(false);
   const [cardExpanded, setCardExpanded] = useState({});
+  const searchTimer = useRef(null);
+
+  const handleSearchChange = (v) => {
+    setSearchTerm(v);
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => { setDebouncedSearch(v); setVisibleCount(PAGE_SIZE); }, 350);
+  };
+
+  const handleEstadoFilter = (v) => {
+    setEstadoFilter(v);
+    setVisibleCount(PAGE_SIZE);
+  };
 
   const isCardExpanded = (id) => cardExpanded[id] === true;
 
@@ -155,9 +172,17 @@ export default function NoticiasPage() {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
 
-  const filteredNoticias = noticias.filter((n) =>
-    (n.title ?? "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredNoticias = useMemo(() => {
+    const q = debouncedSearch.toLowerCase();
+    return noticias.filter((n) => {
+      const matchSearch = !q || (n.title ?? "").toLowerCase().includes(q) || (n.author_name ?? "").toLowerCase().includes(q);
+      const matchEstado = !estadoFilter || (n.estado ?? "publicada") === estadoFilter;
+      return matchSearch && matchEstado;
+    });
+  }, [noticias, debouncedSearch, estadoFilter]);
+
+  const visibleNoticias = filteredNoticias.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredNoticias.length;
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full min-w-0">
@@ -357,24 +382,51 @@ export default function NoticiasPage() {
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden w-full min-w-0">
         <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50">
-          <div className="relative w-full max-w-full sm:max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-            <input
-              type="search"
-              enterKeyHint="search"
-              placeholder="Buscar noticia..."
-              className="w-full pl-10 pr-4 py-3 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-base sm:text-sm touch-manipulation"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Búsqueda */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+              <input
+                type="search"
+                enterKeyHint="search"
+                placeholder="Buscar noticia o autor..."
+                className="w-full pl-10 pr-4 py-3 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-base sm:text-sm touch-manipulation"
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
+              {searchTerm && (
+                <button onClick={() => handleSearchChange("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                </button>
+              )}
+            </div>
+            {/* Filtro estado */}
+            <div className="relative sm:w-44">
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              <select
+                value={estadoFilter}
+                onChange={(e) => handleEstadoFilter(e.target.value)}
+                className="w-full pl-9 pr-8 py-3 sm:py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-500 text-sm appearance-none"
+              >
+                <option value="">Todos los estados</option>
+                <option value="publicada">Publicadas</option>
+                <option value="programada">Programadas</option>
+                <option value="borrador">Borrador</option>
+                <option value="archivada">Archivadas</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            </div>
           </div>
+          <p className="text-xs text-gray-400 mt-2">
+            {filteredNoticias.length} de {noticias.length} noticia{noticias.length !== 1 ? "s" : ""}
+          </p>
         </div>
 
         <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
-          {filteredNoticias.length === 0 ? (
+          {visibleNoticias.length === 0 ? (
             <p className="text-center text-gray-500 py-8">No se encontraron noticias.</p>
           ) : (
-            filteredNoticias.map((noticia) => {
+            visibleNoticias.map((noticia) => {
               const expanded = isCardExpanded(noticia.id);
               const estadoNoticia = noticia.estado ?? "publicada";
               return (
@@ -497,6 +549,17 @@ export default function NoticiasPage() {
                 </article>
               );
             })
+          )}
+          {/* Cargar más */}
+          {hasMore && (
+            <div className="pt-2 pb-4 text-center">
+              <button
+                onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
+                className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Mostrar más ({filteredNoticias.length - visibleCount} restantes)
+              </button>
+            </div>
           )}
         </div>
       </div>

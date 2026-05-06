@@ -1,13 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useApp } from "@/context/AppContext";
-import { FileText, Download, Plus, Trash2, X, Upload, Loader2 } from "lucide-react";
+import { FileText, Download, Plus, Trash2, X, Upload, Loader2, Search } from "lucide-react";
+
+function useDebounce(delay = 350) {
+  const [value, setValue] = useState("");
+  const [debounced, setDebounced] = useState("");
+  const timer = useRef(null);
+  const onChange = (v) => {
+    setValue(v);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setDebounced(v), delay);
+  };
+  return [value, debounced, onChange];
+}
 
 export default function FormatosPage() {
   const { user, formatos, addFormato, deleteFormato } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [rawSearch, debouncedSearch, setSearch] = useDebounce(350);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -16,6 +29,16 @@ export default function FormatosPage() {
   });
 
   const canManage = user?.role === "Administrador" || user?.role === "Gestión Humana";
+
+  const filteredFormatos = useMemo(() => {
+    const q = debouncedSearch.toLowerCase();
+    if (!q) return formatos;
+    return formatos.filter(
+      (f) =>
+        f.name.toLowerCase().includes(q) ||
+        (f.description ?? "").toLowerCase().includes(q)
+    );
+  }, [formatos, debouncedSearch]);
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -46,7 +69,10 @@ export default function FormatosPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center space-x-3">
           <FileText className="h-8 w-8 text-red-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Formatos</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Formatos</h1>
+            <p className="text-sm text-gray-400">{filteredFormatos.length} de {formatos.length} formato{formatos.length !== 1 ? "s" : ""}</p>
+          </div>
         </div>
 
         {canManage && (
@@ -60,15 +86,34 @@ export default function FormatosPage() {
         )}
       </div>
 
+      {/* Barra de búsqueda */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Buscar formato por nombre o descripción…"
+            value={rawSearch}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+          />
+          {rawSearch && (
+            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+              <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {formatos.length === 0 ? (
+        {filteredFormatos.length === 0 ? (
           <div className="col-span-full py-20 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
             <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <h3 className="text-gray-900 font-semibold">No hay formatos disponibles</h3>
             <p className="text-gray-500 text-sm">Los documentos institucionales aparecerán aquí una vez subidos.</p>
           </div>
         ) : (
-          formatos.map((formato) => (
+          filteredFormatos.map((formato) => (
             <div key={formato.id} className="group relative bg-white border border-gray-200 rounded-2xl p-6 hover:border-red-200 hover:shadow-xl hover:shadow-red-500/5 transition-all flex flex-col h-full">
               <div className="flex items-start justify-between mb-4">
                 <div className="bg-red-50 p-3 rounded-xl transform group-hover:scale-110 transition-transform">

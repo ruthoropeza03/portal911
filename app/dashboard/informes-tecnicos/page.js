@@ -1,8 +1,10 @@
 "use client";
 
 import { useApp } from "@/context/AppContext";
-import { useState, useEffect } from "react";
-import { UploadCloud, CheckCircle2, AlertCircle, Server, FileText, Download } from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { UploadCloud, CheckCircle2, AlertCircle, Server, FileText, Download, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
+
+const PAGE_SIZE = 10;
 
 export default function InformesTecnicosPage() {
   const { user, informesTecnicos, cargarInformesTecnicos, addInformeTecnico } = useApp();
@@ -11,7 +13,19 @@ export default function InformesTecnicosPage() {
   const [description, setDescription] = useState("");
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [status, setStatus] = useState(null); // { type: 'success'|'error', msg }
+  const [status, setStatus] = useState(null);
+
+  // Búsqueda y paginación en el historial
+  const [rawSearch, setRawSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [histPage, setHistPage] = useState(0);
+  const searchTimer = useRef(null);
+
+  const handleSearchChange = (v) => {
+    setRawSearch(v);
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => { setDebouncedSearch(v); setHistPage(0); }, 350);
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -20,6 +34,21 @@ export default function InformesTecnicosPage() {
     };
     init();
   }, []);
+
+  // Filtrado de historial
+  const filteredInformes = useMemo(() => {
+    const q = debouncedSearch.toLowerCase();
+    if (!q) return informesTecnicos;
+    return informesTecnicos.filter(
+      (i) =>
+        i.title.toLowerCase().includes(q) ||
+        (i.description ?? "").toLowerCase().includes(q) ||
+        (i.user_name ?? "").toLowerCase().includes(q)
+    );
+  }, [informesTecnicos, debouncedSearch]);
+
+  const totalHistPages = Math.max(1, Math.ceil(filteredInformes.length / PAGE_SIZE));
+  const paginatedInformes = filteredInformes.slice(histPage * PAGE_SIZE, (histPage + 1) * PAGE_SIZE);
 
   if (user?.department_name !== "Televigilancia" && user?.department_name !== "Tecnologia" && user?.role !== "Administrador") {
     return <div className="p-4 text-red-600 font-medium">No tienes permisos para ver esta página.</div>;
@@ -161,20 +190,37 @@ export default function InformesTecnicosPage() {
 
         {/* Historial de Informes */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Informes Recientes</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">Informes Recientes</h2>
+
+          {/* Búsqueda */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Buscar por título, descripción o autor…"
+              value={rawSearch}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+            {rawSearch && (
+              <button onClick={() => handleSearchChange("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+                <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+              </button>
+            )}
+          </div>
 
           <div className="flex-1 overflow-y-auto pr-2">
             {loading ? (
               <div className="flex justify-center items-center h-32">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
               </div>
-            ) : informesTecnicos.length === 0 ? (
+            ) : paginatedInformes.length === 0 ? (
               <div className="text-center py-10 text-gray-500">
-                No hay informes técnicos registrados.
+                No se encontraron informes.
               </div>
             ) : (
               <ul className="space-y-4">
-                {informesTecnicos.map((inf) => (
+                {paginatedInformes.map((inf) => (
                   <li key={inf.id} className="p-4 border border-gray-100 rounded-lg bg-gray-50 hover:bg-white transition-colors group">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
@@ -201,6 +247,31 @@ export default function InformesTecnicosPage() {
               </ul>
             )}
           </div>
+
+          {/* Paginación historial */}
+          {totalHistPages > 1 && (
+            <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-3">
+              <p className="text-xs text-gray-400">
+                {histPage * PAGE_SIZE + 1}–{Math.min((histPage + 1) * PAGE_SIZE, filteredInformes.length)} de {filteredInformes.length}
+              </p>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setHistPage((p) => Math.max(0, p - 1))}
+                  disabled={histPage === 0}
+                  className="p-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setHistPage((p) => Math.min(totalHistPages - 1, p + 1))}
+                  disabled={histPage >= totalHistPages - 1}
+                  className="p-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
