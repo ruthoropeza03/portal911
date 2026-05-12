@@ -12,6 +12,7 @@
     "@neondatabase/serverless": "^1.0.2",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
+    "framer-motion": "^12.38.0",
     "googleapis": "^171.4.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.8.0",
@@ -20,6 +21,7 @@
     "next": "16.2.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-hook-form": "^7.75.0",
     "react-social-media-embed": "^2.5.18"
   },
   "devDependencies": {

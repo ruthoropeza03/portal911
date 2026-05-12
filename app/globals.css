@@ -3,6 +3,16 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* VEN 911 Institutional Colors */
+  --ven-red: #C8102E;
+  --ven-red-dark: #9B0B22;
+  --ven-red-light: #E8314D;
+  --ven-green: #288F3C;
+  --ven-green-light: #3AB854;
+  --ven-navy: #0D1B2A;
+  --ven-navy-mid: #1A2E45;
+  --ven-navy-light: #243B55;
 }
 
 @theme inline {
@@ -10,6 +20,88 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* VEN 911 Colors */
+  --color-ven-red: var(--ven-red);
+  --color-ven-red-dark: var(--ven-red-dark);
+  --color-ven-red-light: var(--ven-red-light);
+  --color-ven-green: var(--ven-green);
+  --color-ven-green-light: var(--ven-green-light);
+  --color-ven-navy: var(--ven-navy);
+  --color-ven-navy-mid: var(--ven-navy-mid);
+  --color-ven-navy-light: var(--ven-navy-light);
+
+  /* Custom animations */
+  --animate-shimmer: shimmer 2.5s linear infinite;
+  --animate-spin-slow: spin 3s linear infinite;
+  --animate-shake: shake 0.4s ease-in-out;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes shake {
+
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+
+    15% {
+      transform: translateX(-5px);
+    }
+
+    30% {
+      transform: translateX(5px);
+    }
+
+    45% {
+      transform: translateX(-4px);
+    }
+
+    60% {
+      transform: translateX(4px);
+    }
+
+    75% {
+      transform: translateX(-2px);
+    }
+
+    90% {
+      transform: translateX(2px);
+    }
+  }
+
+  @keyframes pulse-glow {
+
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(200, 16, 46, 0.0);
+    }
+
+    50% {
+      box-shadow: 0 0 16px 4px rgba(200, 16, 46, 0.25);
+    }
+  }
+
+  @keyframes float-up {
+    0% {
+      opacity: 0;
+      transform: translateY(24px) scale(0.97);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 }
 
 @media (prefers-color-scheme: dark) {
