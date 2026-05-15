@@ -28,8 +28,9 @@ export default function Navbar({ onMenuClick }) {
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
+      <ShimmerBar />
       <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="relative flex items-center justify-between h-16">
           <div className="flex items-center">
             {/* Boton tlf */}
             <button
@@ -41,11 +42,23 @@ export default function Navbar({ onMenuClick }) {
             </button>
 
             <div className="flex items-center">
-              <Image src={'/logo.svg'} alt="logo" width={30} height={30} className="mr-2" />
-              <span className="font-bold text-xl text-gray-900">
-                VEN 911
-              </span>
+              <Image src={'/logo.svg'} alt="logo" width={32} height={32} className="mr-3" />
+              <div className="flex flex-col">
+                <span className="font-bold text-xl text-gray-900 leading-none">
+                  VEN 911
+                </span>
+                <span className="text-[10px] text-gray-500 font-medium tracking-wide mt-0.5">
+                  Juntos por la Vida y la Paz
+                </span>
+              </div>
             </div>
+          </div>
+
+          {/* Lema central */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block w-max">
+            <span className="italic font-bold text-[24px] text-gray-800">
+              VEN 9-1-1 Somos todos.
+            </span>
           </div>
 
           <div className="flex items-center gap-4">
@@ -132,5 +145,29 @@ export default function Navbar({ onMenuClick }) {
         </div>
       </div>
     </header>
+  );
+}
+
+/* ─── Shimmer Bar ─────────────────────────────────────────────────── */
+function ShimmerBar() {
+  const VEN_RED = "#D32F2F";
+  const VEN_GREEN = "#388E3C";
+  return (
+    <div className="absolute top-0 left-0 right-0 h-[3px] overflow-hidden">
+      <div
+        className="h-full w-full"
+        style={{
+          background: `linear-gradient(90deg, ${VEN_RED} 0%, ${VEN_GREEN} 50%, ${VEN_RED} 100%)`,
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)",
+          animation: "shimmer 2.5s linear infinite",
+        }}
+      />
+    </div>
   );
 }

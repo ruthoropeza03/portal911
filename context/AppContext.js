@@ -15,6 +15,7 @@ export function AppProvider({ children }) {
   const [bitacora, setBitacora] = useState([]);
   const [notificaciones, setNotificaciones] = useState([]);
   const [informesTecnicos, setInformesTecnicos] = useState([]);
+  const [solicitudesCambioGuardia, setSolicitudesCambioGuardia] = useState([]);
   const [toastConfig, setToastConfig] = useState({ isVisible: false, title: '', message: '', type: 'info' });
   const [mounted, setMounted] = useState(false);
 
@@ -77,6 +78,10 @@ export function AppProvider({ children }) {
         cargarInformesTecnicos();
       }
 
+      if (user.role === 'Coordinador') {
+        cargarSolicitudesCambioGuardia();
+      }
+
       cargarNotificaciones(true);
     }
   }, [user, mounted]);
@@ -126,6 +131,46 @@ export function AppProvider({ children }) {
     const data = await fetchAPI('/api/technical-reports');
     if (data && !data.error) setInformesTecnicos(data);
   }, [fetchAPI]);
+
+  const cargarSolicitudesCambioGuardia = useCallback(async () => {
+    const data = await fetchAPI('/api/guard-changes');
+    if (data && !data.error) setSolicitudesCambioGuardia(data);
+  }, [fetchAPI]);
+
+  const subirArchivoCambioGuardia = useCallback(async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const data = await fetchAPI('/api/guard-changes/upload', {
+      method: 'POST',
+      body: formData
+    });
+    return data;
+  }, [fetchAPI]);
+
+  const addSolicitudCambioGuardia = useCallback(async (solicitudData) => {
+    const data = await fetchAPI('/api/guard-changes', {
+      method: 'POST',
+      body: JSON.stringify(solicitudData)
+    });
+    if (data && !data.error) {
+      await cargarSolicitudesCambioGuardia();
+      return { success: true };
+    }
+    return { success: false, error: data?.error || 'Error al crear la solicitud' };
+  }, [cargarSolicitudesCambioGuardia, fetchAPI]);
+
+  const revisarSolicitudCambioGuardia = useCallback(async (id, status, rejection_comment) => {
+    const data = await fetchAPI(`/api/guard-changes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, rejection_comment })
+    });
+    if (data && !data.error) {
+      await cargarSolicitudesCambioGuardia();
+      return { success: true };
+    }
+    return { success: false, error: data?.error || 'Error al actualizar la solicitud' };
+  }, [cargarSolicitudesCambioGuardia, fetchAPI]);
 
   const verificarNuevasNotificaciones = useCallback(async () => {
     const data = await fetchAPI(`/api/notificaciones?unread=true`);
@@ -367,6 +412,11 @@ export function AppProvider({ children }) {
         informesTecnicos,
         cargarInformesTecnicos,
         addInformeTecnico,
+        solicitudesCambioGuardia,
+        cargarSolicitudesCambioGuardia,
+        subirArchivoCambioGuardia,
+        addSolicitudCambioGuardia,
+        revisarSolicitudCambioGuardia,
         cargarReportes,
         cargarBitacora,
         fetchAPI,

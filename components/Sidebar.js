@@ -16,7 +16,8 @@ import {
   X,
   Bell,
   Server,
-  Settings
+  Settings,
+  CalendarClock
 } from "lucide-react";
 
 export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }) {
@@ -36,6 +37,7 @@ export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileC
 
     if (user.role === "Coordinador") {
       links.push({ name: "Subir Reportes", path: "/dashboard/reportes", icon: UploadCloud });
+      links.push({ name: "Cambio de Guardia", path: "/dashboard/cambio-guardia", icon: CalendarClock });
     }
 
     if (user.department_name === "Televigilancia" || user.department_name === "Tecnologia") {
