@@ -209,6 +209,68 @@ export default function CambioGuardiaPage() {
             </div>
           </div>
 
+          {/* Vista Móvil (Tarjetas) */}
+          <div className="md:hidden space-y-4">
+            {paginated.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center flex flex-col items-center">
+                <FileText className="h-8 w-8 text-gray-300 mb-2" />
+                <p className="text-gray-500 font-medium">No hay solicitudes.</p>
+              </div>
+            ) : (
+              paginated.map((r) => (
+                <div key={r.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+                        <User className="h-5 w-5 text-red-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 text-sm">{r.requester_name}</h3>
+                        <p className="text-xs text-gray-500">{r.requester_dept}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-[10px] text-gray-500 uppercase font-medium">{r.request_type}</span>
+                      <StatusBadge status={r.status} />
+                    </div>
+                  </div>
+                  <div className="border-t border-gray-100 pt-3">
+                    <div className="flex flex-col gap-1 text-xs text-gray-600 mb-3">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                        <span><span className="font-medium">Original:</span> {new Date(r.guard_date).toLocaleDateString('es-VE')}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CalendarClock className="h-3.5 w-3.5 text-red-400" />
+                        <span><span className="font-medium text-red-600">Deseada:</span> {new Date(r.desired_date).toLocaleDateString('es-VE')}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-gray-50 pt-2">
+                      <a
+                        href={r.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-red-600 hover:text-red-700 font-medium text-xs"
+                      >
+                        <Download className="w-3.5 h-3.5 mr-1" /> Formato PDF
+                      </a>
+                      
+                      {r.status === 'pendiente' ? (
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => handleApprove(r.id)} className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors" title="Aprobar"><CheckCircle className="w-5 h-5"/></button>
+                          <button onClick={() => setRejectionModal({ isOpen: true, id: r.id, comment: '' })} className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors" title="Rechazar"><XCircle className="w-5 h-5"/></button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400 font-medium">Procesada</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Vista Escritorio (Tabla) */}
           <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -268,6 +330,42 @@ export default function CambioGuardiaPage() {
               </table>
             </div>
           </div>
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm gap-2">
+              <p className="text-sm text-gray-500">
+                Mostrando {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filteredRequests.length)} de {filteredRequests.length}
+              </p>
+              <div className="flex gap-1 flex-wrap justify-center">
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                >
+                  ← Ant.
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPage(i)}
+                    className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                      i === page ? "bg-red-600 text-white border-red-600" : "border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                >
+                  Sig. →
+                </button>
+              </div>
+            </div>
+          )}
           
           {/* Modal Rechazo Simple */}
           {rejectionModal.isOpen && (
