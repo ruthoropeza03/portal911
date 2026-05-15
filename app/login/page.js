@@ -604,7 +604,7 @@ export default function LoginPage() {
 
           {/* ── Footer ── */}
           <p className="mt-8 text-center text-xs text-gray-400 select-none">
-            © {new Date().getFullYear()} VEN 911 · Sistema Institucional Reservado
+            © {new Date().getFullYear()} VEN 911 Lara
           </p>
         </motion.form>
       </motion.div>

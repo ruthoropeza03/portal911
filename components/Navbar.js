@@ -3,7 +3,7 @@
 import { useApp } from "@/context/AppContext";
 import { LogOut, Bell, Menu, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
 export default function Navbar({ onMenuClick }) {
@@ -21,7 +21,7 @@ export default function Navbar({ onMenuClick }) {
   const handleMarkRead = async (id, e) => {
     e.stopPropagation();
     await marcarNotificacionLeida(id);
-    await cargarNotificaciones(true); // Recargar
+    await cargarNotificaciones(true);
   };
 
   if (!user) return null;
@@ -32,7 +32,6 @@ export default function Navbar({ onMenuClick }) {
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-16">
           <div className="flex items-center">
-            {/* Boton tlf */}
             <button
               onClick={onMenuClick}
               className="md:hidden p-2 mr-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -54,16 +53,21 @@ export default function Navbar({ onMenuClick }) {
             </div>
           </div>
 
-          {/* Lema central */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block w-max">
-            <span className="italic font-bold text-[24px] text-gray-800">
-              VEN 9-1-1 Somos todos.
-            </span>
+          {/* Carrusel de lema central */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block">
+            <FadeTextCarousel
+              items={[
+                "VEN 9-1-1 Somos todos.",
+                "Voluntad, Servicio, Respuesta Inmediata",
+                "Juntos por la Vida y la Paz"
+              ]}
+              interval={4000}
+            />
           </div>
 
           <div className="flex items-center gap-4">
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-2 text-gray-400 hover:text-gray-500 relative"
               >
@@ -77,21 +81,21 @@ export default function Navbar({ onMenuClick }) {
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
                   <div className="px-4 py-2 border-b border-gray-100 flex justify-between items-center">
                     <h3 className="text-sm font-semibold text-gray-900">Notificaciones</h3>
-                    <button 
+                    <button
                       onClick={() => router.push('/dashboard/notificaciones')}
                       className="text-xs text-red-600 hover:text-red-700"
                     >
                       Ver todas
                     </button>
                   </div>
-                  
+
                   <div className="max-h-80 overflow-y-auto">
                     {notificaciones?.length > 0 ? (
                       notificaciones.slice(0, 5).map((noti) => (
-                        <div 
-                          key={noti.id} 
+                        <div
+                          key={noti.id}
                           className={`px-4 py-3 border-b border-gray-50 flex items-start gap-3 hover:bg-gray-50 transition-colors cursor-pointer ${!noti.is_read ? 'bg-red-50/20' : ''}`}
-                          onClick={() => !noti.is_read && handleMarkRead(noti.id, {stopPropagation:()=>{}})}
+                          onClick={() => !noti.is_read && handleMarkRead(noti.id, { stopPropagation: () => { } })}
                         >
                           <div className={`mt-1 p-1.5 rounded-full ${!noti.is_read ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-400'}`}>
                             <Bell className="h-3 w-3" />
@@ -105,7 +109,7 @@ export default function Navbar({ onMenuClick }) {
                             </p>
                           </div>
                           {!noti.is_read && (
-                            <button 
+                            <button
                               onClick={(e) => handleMarkRead(noti.id, e)}
                               className="text-gray-400 hover:text-red-600 ml-1"
                               title="Marcar como leída"
@@ -145,6 +149,42 @@ export default function Navbar({ onMenuClick }) {
         </div>
       </div>
     </header>
+  );
+}
+
+/* ─── Carrusel de texto con fade ─────────────────────────────────── */
+function FadeTextCarousel({ items, interval = 4000 }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      // Primero ocultar con fade out
+      setIsVisible(false);
+
+      // Cambiar el texto después de que termine el fade out
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % items.length);
+        setIsVisible(true);
+      }, 300); // Debe coincidir con la duración del fade en CSS
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [items.length, interval]);
+
+  return (
+    <div className="relative flex items-center justify-center min-w-[320px]">
+      <span
+        className={`
+          italic font-bold text-[24px] text-gray-800 
+          transition-all duration-300 ease-in-out
+          ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}
+        `}
+        style={{ whiteSpace: 'nowrap' }}
+      >
+        {items[currentIndex]}
+      </span>
+    </div>
   );
 }
 
