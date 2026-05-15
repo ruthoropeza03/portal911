@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef } from "react";
 import { useApp } from "@/context/AppContext";
 import {
-  CalendarClock, User, Calendar, Download, Search, ChevronDown, X, Shield, Upload, FileText, CheckCircle, XCircle
+  CalendarClock, User, Calendar, Download, Search, ChevronDown, X, Shield, Upload, FileText, CheckCircle, XCircle, MessageCircle
 } from "lucide-react";
 
 const PAGE_SIZE = 15;
@@ -37,6 +37,7 @@ export default function CambioGuardiaPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(0);
   const [rejectionModal, setRejectionModal] = useState({ isOpen: false, id: null, comment: '' });
+  const [commentModal, setCommentModal] = useState({ isOpen: false, comment: '' });
 
   if (!user || user.role !== "Coordinador") {
     return (
@@ -255,14 +256,21 @@ export default function CambioGuardiaPage() {
                         <Download className="w-3.5 h-3.5 mr-1" /> Formato PDF
                       </a>
                       
-                      {r.status === 'pendiente' ? (
-                        <div className="flex justify-end gap-2">
-                          <button onClick={() => handleApprove(r.id)} className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors" title="Aprobar"><CheckCircle className="w-5 h-5"/></button>
-                          <button onClick={() => setRejectionModal({ isOpen: true, id: r.id, comment: '' })} className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors" title="Rechazar"><XCircle className="w-5 h-5"/></button>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-gray-400 font-medium">Procesada</span>
-                      )}
+                      <div className="flex justify-end items-center gap-2">
+                        {r.request_type === 'especial' && (
+                          <button onClick={() => setCommentModal({ isOpen: true, comment: r.comment })} className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Ver Motivo">
+                            <MessageCircle className="w-5 h-5"/>
+                          </button>
+                        )}
+                        {r.status === 'pendiente' ? (
+                          <>
+                            <button onClick={() => handleApprove(r.id)} className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors" title="Aprobar"><CheckCircle className="w-5 h-5"/></button>
+                            <button onClick={() => setRejectionModal({ isOpen: true, id: r.id, comment: '' })} className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors" title="Rechazar"><XCircle className="w-5 h-5"/></button>
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-400 font-medium ml-1">Procesada</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -315,14 +323,21 @@ export default function CambioGuardiaPage() {
                         </a>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {r.status === 'pendiente' ? (
-                          <div className="flex justify-end gap-2">
-                            <button onClick={() => handleApprove(r.id)} className="text-green-600 hover:text-green-900" title="Aprobar"><CheckCircle className="w-5 h-5"/></button>
-                            <button onClick={() => setRejectionModal({ isOpen: true, id: r.id, comment: '' })} className="text-red-600 hover:text-red-900" title="Rechazar"><XCircle className="w-5 h-5"/></button>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">Procesada</span>
-                        )}
+                        <div className="flex justify-end items-center gap-2">
+                          {r.request_type === 'especial' && (
+                            <button onClick={() => setCommentModal({ isOpen: true, comment: r.comment })} className="text-blue-600 hover:text-blue-900" title="Ver Motivo">
+                              <MessageCircle className="w-5 h-5"/>
+                            </button>
+                          )}
+                          {r.status === 'pendiente' ? (
+                            <>
+                              <button onClick={() => handleApprove(r.id)} className="text-green-600 hover:text-green-900" title="Aprobar"><CheckCircle className="w-5 h-5"/></button>
+                              <button onClick={() => setRejectionModal({ isOpen: true, id: r.id, comment: '' })} className="text-red-600 hover:text-red-900" title="Rechazar"><XCircle className="w-5 h-5"/></button>
+                            </>
+                          ) : (
+                            <span className="text-gray-400 ml-2">Procesada</span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -382,6 +397,21 @@ export default function CambioGuardiaPage() {
                 <div className="flex justify-end gap-3">
                   <button onClick={() => setRejectionModal({ isOpen: false, id: null, comment: '' })} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
                   <button onClick={submitRejection} disabled={!rejectionModal.comment.trim()} className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50">Confirmar Rechazo</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Ver Motivo Especial */}
+          {commentModal.isOpen && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Motivo de Solicitud Especial</h3>
+                <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 mb-6 min-h-[100px] whitespace-pre-wrap border border-gray-200">
+                  {commentModal.comment || 'No hay comentario proporcionado.'}
+                </div>
+                <div className="flex justify-end">
+                  <button onClick={() => setCommentModal({ isOpen: false, comment: '' })} className="px-4 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800">Cerrar</button>
                 </div>
               </div>
             </div>
