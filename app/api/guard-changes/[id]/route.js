@@ -10,7 +10,8 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
-    const { id } = params;
+    const paramsResolved = await params;
+    const { id } = paramsResolved;
     const { status, rejection_comment } = await request.json();
 
     if (!['aprobada', 'rechazada'].includes(status)) {
@@ -39,13 +40,15 @@ export async function PUT(request, { params }) {
 
     const requestData = result[0];
 
+    const message = `Tu solicitud de cambio de guardia ha sido ${status}.`;
+    
     // Notificar al solicitante
     await sql`
       INSERT INTO notifications (user_id, title, message, type)
       VALUES (
         ${requestData.requester_id}, 
         'Actualización: Solicitud de Cambio de Guardia', 
-        'Tu solicitud de cambio de guardia ha sido ${status}.', 
+        ${message}, 
         ${status === 'aprobada' ? 'success' : 'error'}
       )
     `;
