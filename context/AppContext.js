@@ -25,7 +25,7 @@ export function AppProvider({ children }) {
     localStorage.removeItem("ven911_token");
     localStorage.removeItem("ven911_user");
     setUser(null);
-    router.push("/login");
+    router.push("/");
   }, [router]);
 
   // Función genérica para fetch autenticado

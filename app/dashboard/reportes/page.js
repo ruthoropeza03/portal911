@@ -2,7 +2,8 @@
 
 import { useApp } from "@/context/AppContext";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { UploadCloud, CheckCircle2, AlertCircle, FileText, Download, Calendar, Clock, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { UploadCloud, CheckCircle2, AlertCircle, FileText, Download, Calendar, Clock, Search, X, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import PdfPreviewModal from "@/components/PdfPreviewModal";
 
 const PAGE_SIZE = 8;
 
@@ -15,6 +16,7 @@ export default function ReportesPage() {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(!reportes.length);
   const [status, setStatus] = useState(null);
+  const [previewModal, setPreviewModal] = useState({ isOpen: false, fileId: null, fileName: "" });
 
   // Búsqueda en el historial
   const [rawSearch, setRawSearch] = useState("");
@@ -237,15 +239,26 @@ export default function ReportesPage() {
                           <span>Subido el {new Date(rep.created_at).toLocaleDateString('es-VE')}</span>
                         </div>
                       </div>
-                      <a
-                        href={`/api/drive/download?fileId=${rep.file_drive_id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="ml-4 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors flex-shrink-0"
-                        title="Descargar Reporte"
-                      >
-                        <Download className="h-4 w-4" />
-                      </a>
+                      <div className="flex items-center gap-1 ml-4 shrink-0">
+                        {rep.file_name?.toLowerCase().endsWith('.pdf') && (
+                          <button
+                            onClick={() => setPreviewModal({ isOpen: true, fileId: rep.file_drive_id, fileName: rep.file_name })}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                            title="Previsualizar"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                        )}
+                        <a
+                          href={`/api/drive/download?fileId=${rep.file_drive_id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                          title="Descargar Reporte"
+                        >
+                          <Download className="h-4 w-4" />
+                        </a>
+                      </div>
                     </div>
                   </li>
                 ))}
@@ -279,6 +292,13 @@ export default function ReportesPage() {
           )}
         </div>
       </div>
+      {/* Preview Modal */}
+      <PdfPreviewModal
+        isOpen={previewModal.isOpen}
+        onClose={() => setPreviewModal({ isOpen: false, fileId: null, fileName: "" })}
+        fileId={previewModal.fileId}
+        fileName={previewModal.fileName}
+      />
     </div>
   );
 }

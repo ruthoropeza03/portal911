@@ -2,7 +2,8 @@
 
 import { useApp } from "@/context/AppContext";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { UploadCloud, CheckCircle2, AlertCircle, Server, FileText, Download, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { UploadCloud, CheckCircle2, AlertCircle, Server, FileText, Download, Search, X, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import PdfPreviewModal from "@/components/PdfPreviewModal";
 
 const PAGE_SIZE = 10;
 
@@ -14,6 +15,7 @@ export default function InformesTecnicosPage() {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState(null);
+  const [previewModal, setPreviewModal] = useState({ isOpen: false, fileId: null, fileName: "" });
 
   // Búsqueda y paginación en el historial
   const [rawSearch, setRawSearch] = useState("");
@@ -232,15 +234,26 @@ export default function InformesTecnicosPage() {
                           <span>{inf.user_name}</span>
                         </div>
                       </div>
-                      <a
-                        href={`/api/drive/download?fileId=${inf.file_drive_id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="ml-4 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors flex-shrink-0"
-                        title="Descargar Informe"
-                      >
-                        <Download className="h-5 w-5" />
-                      </a>
+                      <div className="flex items-center gap-1 ml-4 shrink-0">
+                        {(inf.file_name?.toLowerCase().endsWith('.pdf') || inf.file_mime_type === 'application/pdf') && (
+                          <button
+                            onClick={() => setPreviewModal({ isOpen: true, fileId: inf.file_drive_id, fileName: inf.title })}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                            title="Previsualizar"
+                          >
+                            <Eye className="h-5 w-5" />
+                          </button>
+                        )}
+                        <a
+                          href={`/api/drive/download?fileId=${inf.file_drive_id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                          title="Descargar Informe"
+                        >
+                          <Download className="h-5 w-5" />
+                        </a>
+                      </div>
                     </div>
                   </li>
                 ))}
@@ -274,6 +287,13 @@ export default function InformesTecnicosPage() {
           )}
         </div>
       </div>
+      {/* Preview Modal */}
+      <PdfPreviewModal
+        isOpen={previewModal.isOpen}
+        onClose={() => setPreviewModal({ isOpen: false, fileId: null, fileName: "" })}
+        fileId={previewModal.fileId}
+        fileName={previewModal.fileName}
+      />
     </div>
   );
 }

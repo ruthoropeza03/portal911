@@ -13,7 +13,7 @@ export default function Navbar({ onMenuClick }) {
 
   const handleLogout = () => {
     logout();
-    router.push("/login");
+    router.push("/");
   };
 
   const unreadCount = notificaciones?.filter(n => !n.is_read).length || 0;

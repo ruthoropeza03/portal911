@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useRef } from "react";
 import { useApp } from "@/context/AppContext";
-import { FileText, Download, Plus, Trash2, X, Upload, Loader2, Search } from "lucide-react";
+import { FileText, Download, Plus, Trash2, X, Upload, Loader2, Search, Eye } from "lucide-react";
+import PdfPreviewModal from "@/components/PdfPreviewModal";
 
 function useDebounce(delay = 350) {
   const [value, setValue] = useState("");
@@ -21,6 +22,7 @@ export default function FormatosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [rawSearch, debouncedSearch, setSearch] = useDebounce(350);
+  const [previewModal, setPreviewModal] = useState({ isOpen: false, fileId: null, fileName: "" });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -141,13 +143,24 @@ export default function FormatosPage() {
                 {formato.description || "Sin descripción proporcionada."}
               </p>
 
-              <a
-                href={`/api/drive/download?fileId=${formato.file_drive_id}&public=1`}
-                className="w-full mt-auto flex items-center justify-center px-4 py-2.5 border border-gray-200 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all active:bg-gray-100"
-              >
-                <Download className="h-4 w-4 mr-2 text-red-600" />
-                Descargar Plantilla
-              </a>
+              <div className="flex gap-2 w-full mt-auto">
+                {formato.file_name?.toLowerCase().endsWith('.pdf') && (
+                  <button
+                    onClick={() => setPreviewModal({ isOpen: true, fileId: formato.file_drive_id, fileName: formato.name })}
+                    className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-200 text-xs font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all active:bg-gray-100"
+                  >
+                    <Eye className="h-4 w-4 mr-1 text-slate-500" />
+                    Previsualizar
+                  </button>
+                )}
+                <a
+                  href={`/api/drive/download?fileId=${formato.file_drive_id}&public=1`}
+                  className={`${formato.file_name?.toLowerCase().endsWith('.pdf') ? 'flex-1' : 'w-full'} flex items-center justify-center px-3 py-2 border border-gray-200 text-xs font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all active:bg-gray-100`}
+                >
+                  <Download className="h-4 w-4 mr-1 text-red-600" />
+                  Descargar
+                </a>
+              </div>
             </div>
           ))
         )}
@@ -221,6 +234,14 @@ export default function FormatosPage() {
           </div>
         </div>
       )}
+      {/* Preview Modal */}
+      <PdfPreviewModal
+        isOpen={previewModal.isOpen}
+        onClose={() => setPreviewModal({ isOpen: false, fileId: null, fileName: "" })}
+        fileId={previewModal.fileId}
+        fileName={previewModal.fileName}
+        isPublic={true}
+      />
     </div>
   );
 }

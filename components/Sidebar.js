@@ -44,7 +44,7 @@ export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileC
       links.push({ name: "Informes Técnicos", path: "/dashboard/informes-tecnicos", icon: Server });
     }
 
-    if (user.role === "Gestión Humana") {
+    if (user.role === "Gestión Humana" || user.department_name === "Operaciones") {
       links.push({ name: "Revisión Reportes", path: "/dashboard/revision", icon: CheckSquare });
     }
 

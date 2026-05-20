@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }) {
     if (isMounted && typeof window !== "undefined") {
       const savedUser = localStorage.getItem("ven911_user");
       if (!savedUser && !user) {
-        router.push("/login");
+        router.push("/");
       }
     }
   }, [user, router, isMounted]);

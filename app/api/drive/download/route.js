@@ -15,6 +15,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const fileId = searchParams.get('fileId');
   const isPublic = searchParams.get('public') === '1';
+  const inline = searchParams.get('inline') === '1';
 
   if (!fileId) {
     return NextResponse.json({ error: 'Falta el parámetro fileId' }, { status: 400 });
@@ -34,11 +35,13 @@ export async function GET(request) {
     // Convertir el stream de Node.js a ReadableStream de Web API de forma robusta
     const webStream = Readable.toWeb(stream);
 
+    const disposition = inline ? 'inline' : 'attachment';
+
     return new Response(webStream, {
 
       headers: {
         'Content-Type': mimeType || 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
+        'Content-Disposition': `${disposition}; filename="${encodeURIComponent(filename)}"`,
         'Cache-Control': 'private, no-cache',
       },
     });

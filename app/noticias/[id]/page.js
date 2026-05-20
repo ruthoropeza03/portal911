@@ -14,8 +14,13 @@ export async function generateMetadata({ params }) {
   return { title: `${rows[0].title} | Portal VEN 911` };
 }
 
-export default async function NoticiaPublicaPage({ params }) {
+export default async function NoticiaPublicaPage({ params, searchParams }) {
   const { id } = await params;
+  const sp = await searchParams;
+  const from = sp?.from;
+  const backUrl = from === 'dashboard' ? '/dashboard' : '/';
+  const backText = from === 'dashboard' ? 'Volver al dashboard' : 'Volver al inicio';
+
   const rows = await sql`SELECT * FROM news WHERE id = ${id} AND visible = true AND (estado = 'publicada' OR estado IS NULL)`;
   if (rows.length === 0) notFound();
 
@@ -27,11 +32,11 @@ export default async function NoticiaPublicaPage({ params }) {
       <header className="bg-white border-b border-gray-100">
         <div className="max-w-3xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center gap-4">
           <Link
-            href="/"
+            href={backUrl}
             className="inline-flex items-center text-sm font-medium text-red-600 hover:text-red-800 py-2 -my-1 touch-manipulation min-h-[44px] sm:min-h-0"
           >
             <ChevronLeft className="h-4 w-4 mr-1 shrink-0" />
-            Volver al inicio
+            {backText}
           </Link>
         </div>
       </header>
