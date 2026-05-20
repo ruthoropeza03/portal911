@@ -49,7 +49,7 @@ export default function NoticiasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [estadoFilter, setEstadoFilter] = useState("");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [page, setPage] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [cardExpanded, setCardExpanded] = useState({});
   const searchTimer = useRef(null);
@@ -57,12 +57,12 @@ export default function NoticiasPage() {
   const handleSearchChange = (v) => {
     setSearchTerm(v);
     clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => { setDebouncedSearch(v); setVisibleCount(PAGE_SIZE); }, 350);
+    searchTimer.current = setTimeout(() => { setDebouncedSearch(v); setPage(0); }, 350);
   };
 
   const handleEstadoFilter = (v) => {
     setEstadoFilter(v);
-    setVisibleCount(PAGE_SIZE);
+    setPage(0);
   };
 
   const isCardExpanded = (id) => cardExpanded[id] === true;
@@ -181,8 +181,8 @@ export default function NoticiasPage() {
     });
   }, [noticias, debouncedSearch, estadoFilter]);
 
-  const visibleNoticias = filteredNoticias.slice(0, visibleCount);
-  const hasMore = visibleCount < filteredNoticias.length;
+  const totalPages = Math.max(1, Math.ceil(filteredNoticias.length / PAGE_SIZE));
+  const paginatedNoticias = filteredNoticias.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full min-w-0">
@@ -423,10 +423,10 @@ export default function NoticiasPage() {
         </div>
 
         <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
-          {visibleNoticias.length === 0 ? (
+          {paginatedNoticias.length === 0 ? (
             <p className="text-center text-gray-500 py-8">No se encontraron noticias.</p>
           ) : (
-            visibleNoticias.map((noticia) => {
+            paginatedNoticias.map((noticia) => {
               const expanded = isCardExpanded(noticia.id);
               const estadoNoticia = noticia.estado ?? "publicada";
               return (
@@ -550,15 +550,39 @@ export default function NoticiasPage() {
               );
             })
           )}
-          {/* Cargar más */}
-          {hasMore && (
-            <div className="pt-2 pb-4 text-center">
-              <button
-                onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
-                className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Mostrar más ({filteredNoticias.length - visibleCount} restantes)
-              </button>
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mt-2">
+              <p className="text-sm text-gray-500">
+                Mostrando {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filteredNoticias.length)} de {filteredNoticias.length}
+              </p>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                >
+                  ← Ant.
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPage(i)}
+                    className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                      i === page ? "bg-red-600 text-white border-red-600" : "border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                >
+                  Sig. →
+                </button>
+              </div>
             </div>
           )}
         </div>

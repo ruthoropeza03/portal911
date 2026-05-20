@@ -128,8 +128,7 @@ export default function BitacoraPage() {
   const [logs, setLogs] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [offset, setOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
 
   // Filtros
   const [search, setSearch] = useState("");
@@ -154,13 +153,15 @@ export default function BitacoraPage() {
 
   // ── Carga de datos ─────────────────────────────────────────────────────────
 
-  const fetchLogs = useCallback(async (reset = false) => {
+  const totalPages = total > 0 ? Math.max(1, Math.ceil(total / PAGE_SIZE)) : 1;
+
+  const fetchLogs = useCallback(async (pageIndex) => {
     setLoading(true);
-    const currentOffset = reset ? 0 : offset;
+    const pageOffset = pageIndex * PAGE_SIZE;
 
     const params = new URLSearchParams({
       limit: String(PAGE_SIZE),
-      offset: String(currentOffset),
+      offset: String(pageOffset),
     });
     if (moduleFilter) params.set("module", moduleFilter);
     if (actionFilter) params.set("action", actionFilter);
@@ -169,26 +170,20 @@ export default function BitacoraPage() {
     try {
       const data = await fetchAPI(`/api/audit-log?${params.toString()}`);
       if (data && !data.error) {
-        if (reset) {
-          setLogs(data.logs ?? []);
-        } else {
-          setLogs((prev) => [...prev, ...(data.logs ?? [])]);
-        }
+        setLogs(data.logs ?? []);
         setTotal(data.total ?? 0);
-        setHasMore((reset ? 0 : currentOffset) + PAGE_SIZE < (data.total ?? 0));
-        if (reset) setOffset(PAGE_SIZE);
-        else setOffset(currentOffset + PAGE_SIZE);
       }
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
-  }, [fetchAPI, offset, moduleFilter, actionFilter, search]);
+  }, [fetchAPI, moduleFilter, actionFilter, search]);
 
-  // Carga inicial
+  // Carga inicial y al cambiar filtros
   useEffect(() => {
-    fetchLogs(true);
+    setCurrentPage(0);
+    fetchLogs(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moduleFilter, actionFilter]);
 
@@ -196,19 +191,20 @@ export default function BitacoraPage() {
   useEffect(() => {
     clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(() => {
-      fetchLogs(true);
+      setCurrentPage(0);
+      fetchLogs(0);
     }, 400);
     return () => clearTimeout(searchTimeout.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   const handleRefresh = () => {
-    setOffset(0);
-    fetchLogs(true);
+    fetchLogs(currentPage);
   };
 
-  const handleLoadMore = () => {
-    fetchLogs(false);
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    fetchLogs(newPage);
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -438,25 +434,49 @@ export default function BitacoraPage() {
             ))}
           </div>
 
-          {/* ── Cargar más ── */}
-          <div className="flex flex-col items-center gap-2 pb-4">
-            <p className="text-xs text-gray-400">
-              Mostrando {logs.length} de {total.toLocaleString("es-VE")} registros
-            </p>
-            {hasMore && (
-              <button
-                onClick={handleLoadMore}
-                disabled={loading}
-                className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {loading ? (
-                  <><RefreshCw className="w-4 h-4 animate-spin" /> Cargando…</>
-                ) : (
-                  <>Cargar más registros</>
-                )}
-              </button>
-            )}
-          </div>
+          {/* ── Paginación ── */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm gap-2">
+              <p className="text-sm text-gray-500">
+                Mostrando {currentPage * PAGE_SIZE + 1}–{Math.min((currentPage + 1) * PAGE_SIZE, total)} de {total.toLocaleString("es-VE")}
+              </p>
+              <div className="flex gap-1 flex-wrap justify-center">
+                <button
+                  onClick={() => handlePageChange(Math.max(0, currentPage - 1))}
+                  disabled={currentPage === 0 || loading}
+                  className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                >
+                  ← Ant.
+                </button>
+                {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                  // Sliding window of max 7 page buttons
+                  const half = 3;
+                  let start = Math.max(0, Math.min(currentPage - half, totalPages - 7));
+                  const pageNum = start + i;
+                  if (pageNum >= totalPages) return null;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      disabled={loading}
+                      className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                        pageNum === currentPage ? "bg-red-600 text-white border-red-600" : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      {pageNum + 1}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => handlePageChange(Math.min(totalPages - 1, currentPage + 1))}
+                  disabled={currentPage >= totalPages - 1 || loading}
+                  className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                >
+                  Sig. →
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

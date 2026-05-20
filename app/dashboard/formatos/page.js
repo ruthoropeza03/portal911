@@ -23,6 +23,7 @@ export default function FormatosPage() {
   const [loading, setLoading] = useState(false);
   const [rawSearch, debouncedSearch, setSearch] = useDebounce(350);
   const [previewModal, setPreviewModal] = useState({ isOpen: false, fileId: null, fileName: "" });
+  const [page, setPage] = useState(0);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -42,6 +43,10 @@ export default function FormatosPage() {
     );
   }, [formatos, debouncedSearch]);
 
+  const PAGE_SIZE_FORMATOS = 9; // 3-column grid
+  const totalPages = Math.max(1, Math.ceil(filteredFormatos.length / PAGE_SIZE_FORMATOS));
+  const paginatedFormatos = filteredFormatos.slice(page * PAGE_SIZE_FORMATOS, (page + 1) * PAGE_SIZE_FORMATOS);
+
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!formData.file || !formData.name) return;
@@ -57,6 +62,7 @@ export default function FormatosPage() {
     if (success) {
       setIsModalOpen(false);
       setFormData({ name: "", description: "", file: null });
+      setPage(0); // volver a primera página al agregar nuevo
     }
   };
 
@@ -96,7 +102,7 @@ export default function FormatosPage() {
             type="text"
             placeholder="Buscar formato por nombre o descripción…"
             value={rawSearch}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
             className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
           />
           {rawSearch && (
@@ -115,7 +121,7 @@ export default function FormatosPage() {
             <p className="text-gray-500 text-sm">Los documentos institucionales aparecerán aquí una vez subidos.</p>
           </div>
         ) : (
-          filteredFormatos.map((formato) => (
+          paginatedFormatos.map((formato) => (
             <div key={formato.id} className="group relative bg-white border border-gray-200 rounded-2xl p-6 hover:border-red-200 hover:shadow-xl hover:shadow-red-500/5 transition-all flex flex-col h-full">
               <div className="flex items-start justify-between mb-4">
                 <div className="bg-red-50 p-3 rounded-xl transform group-hover:scale-110 transition-transform">
@@ -165,6 +171,42 @@ export default function FormatosPage() {
           ))
         )}
       </div>
+
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
+          <p className="text-sm text-gray-500">
+            Mostrando {page * PAGE_SIZE_FORMATOS + 1}–{Math.min((page + 1) * PAGE_SIZE_FORMATOS, filteredFormatos.length)} de {filteredFormatos.length}
+          </p>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+            >
+              ← Ant.
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i)}
+                className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                  i === page ? "bg-red-600 text-white border-red-600" : "border-gray-200 hover:bg-gray-50"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+              className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+            >
+              Sig. →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Carga */}
       {isModalOpen && (
