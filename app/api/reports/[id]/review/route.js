@@ -4,7 +4,7 @@ import { verifyAuth } from '@/lib/auth';
 
 export async function PUT(request, { params }) {
   const user = verifyAuth(request);
-  if (!user || (user.role !== 'Gestión Humana' && user.role !== 'Administrador')) {
+  if (!user || (user.role !== 'Gestión Humana' && user.role !== 'Administrador') || (user.role == 'Coordinador' && user.department_name !== 'Operaciones')) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 

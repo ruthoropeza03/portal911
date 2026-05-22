@@ -12,7 +12,18 @@ export async function GET(request) {
 
   try {
     let reports;
-    if (user.role === 'Coordinador') {
+    // Coordinadores de Operaciones deben ver todos los reportes
+    if (user.role === 'Coordinador' && user.department_name === "Operaciones") {
+      reports = await sql`
+        SELECT r.*, u.name as user_name, d.name as department_name, us.name as reviewer_name
+        FROM reports r
+        LEFT JOIN users u ON r.user_id = u.id
+        LEFT JOIN departments d ON r.department_id = d.id
+        LEFT JOIN users us ON r.reviewed_by = us.id
+        ORDER BY r.created_at DESC
+      `;
+    } else if (user.role === 'Coordinador') {
+      // Otros coordinadores solo ven sus propios reportes
       reports = await sql`
         SELECT r.*, u.name as user_name, d.name as department_name, us.name as reviewer_name
         FROM reports r

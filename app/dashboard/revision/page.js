@@ -29,7 +29,12 @@ export default function RevisionPage() {
   const [page, setPage] = useState(0);
   const [previewModal, setPreviewModal] = useState({ isOpen: false, fileId: null, fileName: "" });
 
-  if (user?.role !== "Gestión Humana" && user?.role !== "Administrador" && user?.department_name !== "Operaciones") {
+  const canView =
+    user?.role === "Gestión Humana" ||
+    user?.role === "Administrador" ||
+    (user?.role === "Coordinador" && user?.department_name === "Operaciones" );
+
+  if (!canView) {
     return (
       <div className="flex items-center justify-center h-48">
         <div className="text-center">
@@ -144,15 +149,13 @@ export default function RevisionPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-800 truncate max-w-[180px]">{reporte.file_name}</span>
                   <div className="flex items-center gap-1 shrink-0">
-                    {reporte.file_name?.toLowerCase().endsWith('.pdf') && (
-                      <button
-                        onClick={() => setPreviewModal({ isOpen: true, fileId: reporte.file_drive_id, fileName: reporte.file_name })}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                        title="Previsualizar"
-                      >
-                        <Eye className="h-5 w-5" />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setPreviewModal({ isOpen: true, fileId: reporte.file_drive_id, fileName: reporte.file_name })}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                      title="Previsualizar"
+                    >
+                      <Eye className="h-5 w-5" />
+                    </button>
                     <a
                       href={`/api/drive/download?fileId=${reporte.file_drive_id}&public=1`}
                       target="_blank"
@@ -218,14 +221,12 @@ export default function RevisionPage() {
                       <div className="flex flex-col">
                         <span className="text-gray-900 font-medium truncate max-w-[200px]">{reporte.file_name}</span>
                         <div className="flex items-center gap-3 mt-1">
-                          {reporte.file_name?.toLowerCase().endsWith('.pdf') && (
-                            <button
+                          <button
                               onClick={() => setPreviewModal({ isOpen: true, fileId: reporte.file_drive_id, fileName: reporte.file_name })}
                               className="inline-flex items-center text-slate-600 hover:text-red-600 font-medium text-xs"
                             >
                               <Eye className="w-3.5 h-3.5 mr-1" /> Previsualizar
                             </button>
-                          )}
                           <a
                             href={`/api/drive/download?fileId=${reporte.file_drive_id}&public=1`}
                             target="_blank"
