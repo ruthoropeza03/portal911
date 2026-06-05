@@ -281,7 +281,9 @@ export function AppProvider({ children }) {
     });
     if (data && !data.error) {
       await cargarReportes();
+      return true;
     }
+    return false;
   }, [cargarReportes, fetchAPI]);
 
   const addInformeTecnico = useCallback(async (formData) => {
