@@ -17,7 +17,8 @@ import {
   Bell,
   Server,
   Settings,
-  CalendarClock
+  CalendarClock,
+  HeartPulse
 } from "lucide-react";
 
 export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileClose }) {
@@ -51,6 +52,10 @@ export default function Sidebar({ isCollapsed, onToggle, isMobileOpen, onMobileC
     if (user.role === "Administrador") {
       links.push({ name: "Usuarios", path: "/dashboard/usuarios", icon: Users });
       links.push({ name: "Bitacora", path: "/dashboard/bitacora", icon: Table2 });
+    }
+
+    if (["Coordinador", "Gestión Humana", "Administrador"].includes(user.role)) {
+      links.push({ name: "Reposos y Permisos", path: "/dashboard/reposos-permisos", icon: HeartPulse });
     }
 
     return links;
