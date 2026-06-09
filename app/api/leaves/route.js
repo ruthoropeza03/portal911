@@ -18,7 +18,7 @@ export async function GET(request) {
       // Los coordinadores ven las solicitudes registradas por ellos
       leaves = await sql`
         SELECT 
-          l.id, l.applicant_name, l.leave_type, l.reason, l.start_date, l.days_needed,
+          l.id, l.applicant_name, l.applicant_cedula, l.leave_type, l.reason, l.start_date, l.days_needed,
           l.file_name, l.file_drive_id, l.file_mime_type, l.file_size, l.status,
           l.review_comment, l.reviewed_at, l.created_at,
           c.name as coordinator_name,
@@ -35,7 +35,7 @@ export async function GET(request) {
       // Gestión Humana y Administradores ven todas las solicitudes del sistema
       leaves = await sql`
         SELECT 
-          l.id, l.applicant_name, l.leave_type, l.reason, l.start_date, l.days_needed,
+          l.id, l.applicant_name, l.applicant_cedula, l.leave_type, l.reason, l.start_date, l.days_needed,
           l.file_name, l.file_drive_id, l.file_mime_type, l.file_size, l.status,
           l.review_comment, l.reviewed_at, l.created_at,
           c.name as coordinator_name,
@@ -67,7 +67,8 @@ export async function POST(request) {
 
     const body = await request.json();
     const { 
-      applicant_name, 
+      applicant_name,
+      applicant_cedula,
       leave_type, 
       reason, 
       start_date, 
@@ -79,8 +80,14 @@ export async function POST(request) {
     } = body;
 
     // Validar campos obligatorios
-    if (!applicant_name || !leave_type || !reason || !start_date || !days_needed) {
-      return NextResponse.json({ error: 'Faltan datos obligatorios' }, { status: 400 });
+    if (!applicant_name || !applicant_cedula || !leave_type || !reason || !start_date || !days_needed) {
+      return NextResponse.json({ error: 'Faltan datos obligatorios (nombre, cédula, tipo, motivo, fecha y días son requeridos)' }, { status: 400 });
+    }
+
+    // Validar formato básico de cédula (solo dígitos, entre 6 y 8 caracteres)
+    const cedulaLimpia = applicant_cedula.trim().replace(/[^0-9]/g, '');
+    if (cedulaLimpia.length < 6 || cedulaLimpia.length > 8) {
+      return NextResponse.json({ error: 'La cédula debe contener entre 6 y 8 dígitos numéricos' }, { status: 400 });
     }
 
     if (!['Reposo', 'Permiso'].includes(leave_type)) {
@@ -99,10 +106,10 @@ export async function POST(request) {
     // Insertar solicitud en base de datos
     const result = await sql`
       INSERT INTO leaves_and_permits (
-        coordinator_id, department_id, applicant_name, leave_type, reason, start_date, days_needed,
+        coordinator_id, department_id, applicant_name, applicant_cedula, leave_type, reason, start_date, days_needed,
         file_name, file_drive_id, file_mime_type, file_size, status
       ) VALUES (
-        ${user.id}, ${departmentId}, ${applicant_name.trim()}, ${leave_type}, ${reason.trim()}, ${start_date}, ${days},
+        ${user.id}, ${departmentId}, ${applicant_name.trim()}, ${cedulaLimpia}, ${leave_type}, ${reason.trim()}, ${start_date}, ${days},
         ${file_name || null}, ${file_drive_id || null}, ${file_mime_type || null}, ${file_size || null}, 'pendiente'
       ) RETURNING *
     `;

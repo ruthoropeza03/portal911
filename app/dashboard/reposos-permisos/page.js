@@ -39,6 +39,7 @@ export default function RepososPermisosPage() {
 
   // Estados del Formulario (Coordinador)
   const [applicantName, setApplicantName] = useState("");
+  const [applicantCedula, setApplicantCedula] = useState("");
   const [leaveType, setLeaveType] = useState("Reposo");
   const [reason, setReason] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -99,6 +100,11 @@ export default function RepososPermisosPage() {
       setStatusMessage({ type: "error", msg: "Debe ingresar el nombre del solicitante." });
       return;
     }
+    const cedulaDigitos = applicantCedula.trim().replace(/[^0-9]/g, '');
+    if (cedulaDigitos.length < 6 || cedulaDigitos.length > 8) {
+      setStatusMessage({ type: "error", msg: "La cédula debe contener entre 6 y 8 dígitos numéricos." });
+      return;
+    }
     if (!startDate) {
       setStatusMessage({ type: "error", msg: "Debe ingresar la fecha de inicio." });
       return;
@@ -143,6 +149,7 @@ export default function RepososPermisosPage() {
       // Crear solicitud en BD
       const requestData = {
         applicant_name: applicantName,
+        applicant_cedula: applicantCedula,
         leave_type: leaveType,
         reason,
         start_date: startDate,
@@ -161,6 +168,7 @@ export default function RepososPermisosPage() {
       if (res && !res.error) {
         setStatusMessage({ type: "success", msg: "Solicitud registrada y enviada a Gestión Humana correctamente." });
         setApplicantName("");
+        setApplicantCedula("");
         setReason("");
         setStartDate("");
         setDaysNeeded("");
@@ -469,16 +477,33 @@ export default function RepososPermisosPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Tipo de Solicitud</label>
-                    <select
-                      value={leaveType}
-                      onChange={(e) => setLeaveType(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-sm"
-                    >
-                      <option value="Reposo">Reposo Médico</option>
-                      <option value="Permiso">Permiso Especial / Personal</option>
-                    </select>
+                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Cédula de Identidad</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 select-none">V-</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="Ej. 12345678"
+                        value={applicantCedula}
+                        onChange={(e) => setApplicantCedula(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))}
+                        className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-sm"
+                        required
+                        maxLength={8}
+                      />
+                    </div>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Tipo de Solicitud</label>
+                  <select
+                    value={leaveType}
+                    onChange={(e) => setLeaveType(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-sm"
+                  >
+                    <option value="Reposo">Reposo Médico</option>
+                    <option value="Permiso">Permiso Especial / Personal</option>
+                  </select>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -606,6 +631,9 @@ export default function RepososPermisosPage() {
                             {leaf.leave_type}
                           </span>
                           <h3 className="text-base font-bold text-gray-900 mt-2">{leaf.applicant_name}</h3>
+                          {leaf.applicant_cedula && (
+                            <p className="text-[10px] font-mono font-semibold text-gray-500 mt-0.5">C.I. V-{leaf.applicant_cedula}</p>
+                          )}
                           <p className="text-xs text-gray-500 flex items-center mt-1">
                             <Briefcase className="w-3.5 h-3.5 mr-1" />
                             {leaf.department_name || "Sin departamento asignado"}
@@ -805,6 +833,9 @@ export default function RepososPermisosPage() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="font-semibold text-gray-900 truncate">{leaf.applicant_name}</p>
+                          {leaf.applicant_cedula && (
+                            <p className="text-[10px] font-mono text-gray-500">C.I. V-{leaf.applicant_cedula}</p>
+                          )}
                           <p className="text-[10px] text-gray-400">ID: #{leaf.id}</p>
                           {user.role !== "Coordinador" && (
                             <p className="text-[10px] text-gray-500 truncate">{leaf.department_name}</p>
@@ -910,6 +941,9 @@ export default function RepososPermisosPage() {
                           <tr key={leaf.id} className="hover:bg-gray-50/50 transition-colors text-xs">
                             <td className="p-4">
                               <p className="font-bold text-gray-900">{leaf.applicant_name}</p>
+                              {leaf.applicant_cedula && (
+                                <p className="text-[10px] font-mono text-gray-500">C.I. V-{leaf.applicant_cedula}</p>
+                              )}
                               <p className="text-[10px] text-gray-400">ID: #{leaf.id}</p>
                             </td>
                             {user.role !== "Coordinador" && (
