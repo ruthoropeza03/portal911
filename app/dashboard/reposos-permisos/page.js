@@ -58,8 +58,8 @@ export default function RepososPermisosPage() {
   const [reviewingId, setReviewingId] = useState(null);
   const [updatingReview, setUpdatingReview] = useState(false);
 
-  // Previsualizador de archivos PDF
-  const [previewModal, setPreviewModal] = useState({ isOpen: false, fileId: null, fileName: "" });
+  // Previsualizador de archivos
+  const [previewModal, setPreviewModal] = useState({ isOpen: false, fileId: null, fileName: "", fileMimeType: null });
 
   // Cargar solicitudes desde el servidor
   const cargarSolicitudes = async () => {
@@ -314,7 +314,7 @@ export default function RepososPermisosPage() {
       porSolicitanteCant: Object.entries(porSolicitanteCant)
         .map(([label, val]) => ({ label, val }))
         .sort((a, b) => b.val - a.val)
-        .slice(0, 10), // Top 10
+        .slice(0, 10), // Primeros 10 registros
       porSolicitanteMesDias: Object.entries(porSolicitanteMesDias)
         .map(([key, val]) => {
           const match = key.match(/^(.*) \((.*)\)$/);
@@ -638,15 +638,13 @@ export default function RepososPermisosPage() {
                             <span className="text-xs text-gray-700 font-medium truncate max-w-[180px]">{leaf.file_name}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            {leaf.file_name?.toLowerCase().endsWith(".pdf") && (
-                              <button
-                                onClick={() => setPreviewModal({ isOpen: true, fileId: leaf.file_drive_id, fileName: leaf.file_name })}
-                                className="p-1.5 bg-white text-gray-600 hover:text-red-600 rounded-lg border border-gray-200 transition-colors shadow-2xs"
-                                title="Previsualizar PDF"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                              </button>
-                            )}
+                            <button
+                              onClick={() => setPreviewModal({ isOpen: true, fileId: leaf.file_drive_id, fileName: leaf.file_name, fileMimeType: leaf.file_mime_type })}
+                              className="p-1.5 bg-white text-gray-600 hover:text-red-600 rounded-lg border border-gray-200 transition-colors shadow-2xs"
+                              title="Previsualizar archivo"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
                             <a
                               href={`/api/drive/download?fileId=${leaf.file_drive_id}`}
                               target="_blank"
@@ -796,7 +794,94 @@ export default function RepososPermisosPage() {
               </div>
 
               {/* Listado en Tabla */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+              <div className="md:hidden space-y-4">
+                {paginatedLeaves.length === 0 ? (
+                  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center text-sm text-gray-500 italic">
+                    No se encontraron registros que coincidan con la búsqueda.
+                  </div>
+                ) : (
+                  paginatedLeaves.map((leaf) => (
+                    <div key={leaf.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 truncate">{leaf.applicant_name}</p>
+                          <p className="text-[10px] text-gray-400">ID: #{leaf.id}</p>
+                          {user.role !== "Coordinador" && (
+                            <p className="text-[10px] text-gray-500 truncate">{leaf.department_name}</p>
+                          )}
+                        </div>
+                        <span className={`inline-flex px-2 py-0.5 rounded-full font-semibold border text-[10px] ${
+                          leaf.leave_type === "Reposo"
+                            ? "bg-red-50 text-red-700 border-red-100"
+                            : "bg-blue-50 text-blue-700 border-blue-100"
+                        }`}>
+                          {leaf.leave_type}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-[10px] text-gray-500">
+                        <div>
+                          <p className="font-semibold text-gray-700">Inicio</p>
+                          <p>{new Date(leaf.start_date + "T00:00:00").toLocaleDateString("es-VE")}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-700">Días</p>
+                          <p>{leaf.days_needed}</p>
+                        </div>
+                      </div>
+
+                      <div className="text-sm text-gray-600 line-clamp-3" title={leaf.reason}>{leaf.reason}</div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        {leaf.file_drive_id ? (
+                          <>
+                            <button
+                              onClick={() => setPreviewModal({ isOpen: true, fileId: leaf.file_drive_id, fileName: leaf.file_name, fileMimeType: leaf.file_mime_type })}
+                              className="inline-flex items-center gap-1 px-3 py-2 text-xs border border-gray-200 rounded-xl text-gray-600 hover:text-red-600 hover:border-red-200 transition-colors"
+                              title="Previsualizar archivo"
+                            >
+                              <Eye className="w-4 h-4" />
+                              Ver
+                            </button>
+                            <a
+                              href={`/api/drive/download?fileId=${leaf.file_drive_id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 px-3 py-2 text-xs border border-gray-200 rounded-xl text-gray-600 hover:text-red-600 hover:border-red-200 transition-colors"
+                              title="Descargar archivo"
+                            >
+                              <Download className="w-4 h-4" />
+                              Descargar
+                            </a>
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-400 italic">Sin archivo adjunto</span>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-2 text-[10px] text-gray-500">
+                        <div className="flex items-center justify-between">
+                          <span>Estado</span>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-semibold border ${
+                            leaf.status === "pendiente"
+                              ? "bg-yellow-50 text-yellow-800 border-yellow-200"
+                              : "bg-green-50 text-green-800 border-green-200"
+                          }`}>{leaf.status}</span>
+                        </div>
+                        <div>
+                          {leaf.status === "revisado" ? (
+                            <p className="text-gray-600 italic">"{leaf.review_comment || 'Sin comentario'}"</p>
+                          ) : (
+                            <p className="text-gray-600 italic">Esperando revisión</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="hidden md:block bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -854,15 +939,13 @@ export default function RepososPermisosPage() {
                             <td className="p-4">
                               {leaf.file_drive_id ? (
                                 <div className="flex items-center gap-1">
-                                  {leaf.file_name?.toLowerCase().endsWith(".pdf") && (
-                                    <button
-                                      onClick={() => setPreviewModal({ isOpen: true, fileId: leaf.file_drive_id, fileName: leaf.file_name })}
-                                      className="p-1 text-gray-400 hover:text-red-600 rounded"
-                                      title="Ver PDF"
-                                    >
-                                      <Eye className="w-4 h-4" />
-                                    </button>
-                                  )}
+                                  <button
+                                    onClick={() => setPreviewModal({ isOpen: true, fileId: leaf.file_drive_id, fileName: leaf.file_name, fileMimeType: leaf.file_mime_type })}
+                                    className="p-1 text-gray-400 hover:text-red-600 rounded"
+                                    title="Previsualizar archivo"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </button>
                                   <a
                                     href={`/api/drive/download?fileId=${leaf.file_drive_id}`}
                                     className="p-1 text-gray-400 hover:text-red-600 rounded flex items-center"
@@ -937,9 +1020,9 @@ export default function RepososPermisosPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total Solicitudes</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total de solicitudes registradas</p>
                     <h4 className="text-2xl font-black text-gray-900 mt-1">{metricas.totalSolicitudes}</h4>
-                    <p className="text-[10px] text-gray-400 mt-0.5">Filtradas actualmente</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">Número de solicitudes que cumplen el filtro actual</p>
                   </div>
                   <div className="p-3 bg-red-50 text-red-600 rounded-xl">
                     <HeartPulse className="w-6 h-6" />
@@ -948,9 +1031,9 @@ export default function RepososPermisosPage() {
 
                 <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Días Acumulados</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total de días solicitados</p>
                     <h4 className="text-2xl font-black text-gray-900 mt-1">{metricas.totalDias}</h4>
-                    <p className="text-[10px] text-gray-400 mt-0.5">Días totales de ausencias</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">Suma de los días de reposo y permisos</p>
                   </div>
                   <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
                     <Calendar className="w-6 h-6" />
@@ -959,11 +1042,11 @@ export default function RepososPermisosPage() {
 
                 <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Promedio de Ausencia</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Días por solicitud</p>
                     <h4 className="text-2xl font-black text-gray-900 mt-1">
                       {metricas.totalSolicitudes > 0 ? (metricas.totalDias / metricas.totalSolicitudes).toFixed(1) : 0}
                     </h4>
-                    <p className="text-[10px] text-gray-400 mt-0.5">Días promedio por solicitud</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">Promedio de días solicitados por cada registro</p>
                   </div>
                   <div className="p-3 bg-green-50 text-green-600 rounded-xl">
                     <Activity className="w-6 h-6" />
@@ -972,9 +1055,9 @@ export default function RepososPermisosPage() {
 
                 <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Pendientes Revisión</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Solicitudes pendientes</p>
                     <h4 className="text-2xl font-black text-red-600 mt-1">{pendingLeaves.length}</h4>
-                    <p className="text-[10px] text-gray-400 mt-0.5">En bandeja de revisión</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">Registros que aún esperan revisión</p>
                   </div>
                   <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
                     <Clock className="w-6 h-6" />
@@ -1065,7 +1148,7 @@ export default function RepososPermisosPage() {
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-gray-900 flex items-center">
                     <User className="w-4.5 h-4.5 mr-2 text-red-600" />
-                    Ausencias Frecuentes por Empleado (Top Solicitudes)
+                    Ausencias frecuentes por empleado (más solicitudes)
                   </h3>
                   
                   {metricas.porSolicitanteCant.length === 0 ? (
@@ -1139,9 +1222,10 @@ export default function RepososPermisosPage() {
       {/* Previsualizador PDF */}
       <PdfPreviewModal
         isOpen={previewModal.isOpen}
-        onClose={() => setPreviewModal({ isOpen: false, fileId: null, fileName: "" })}
+        onClose={() => setPreviewModal({ isOpen: false, fileId: null, fileName: "", fileMimeType: null })}
         fileId={previewModal.fileId}
         fileName={previewModal.fileName}
+        fileMimeType={previewModal.fileMimeType}
       />
     </div>
   );

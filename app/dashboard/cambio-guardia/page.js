@@ -292,9 +292,9 @@ export default function CambioGuardiaPage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total solicitudes</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total de solicitudes</p>
                     <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.total}</h3>
-                    <p className="text-[10px] text-gray-400 mt-1">Registradas actualmente</p>
+                    <p className="text-[10px] text-gray-400 mt-1">Solicitudes registradas en el sistema</p>
                   </div>
                   <div className="p-3 bg-red-50 text-red-600 rounded-xl">
                     <FileText className="w-6 h-6" />
@@ -302,9 +302,9 @@ export default function CambioGuardiaPage() {
                 </div>
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Pendientes</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Solicitudes pendientes</p>
                     <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.pending}</h3>
-                    <p className="text-[10px] text-gray-400 mt-1">Por revisar</p>
+                    <p className="text-[10px] text-gray-400 mt-1">Solicitudes que aún no han sido revisadas</p>
                   </div>
                   <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
                     <Clock className="w-6 h-6" />
@@ -312,9 +312,9 @@ export default function CambioGuardiaPage() {
                 </div>
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Procesadas</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Solicitudes procesadas</p>
                     <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.approved + stats.rejected}</h3>
-                    <p className="text-[10px] text-gray-400 mt-1">Aprobadas + rechazadas</p>
+                    <p className="text-[10px] text-gray-400 mt-1">Cantidad de solicitudes aprobadas o rechazadas</p>
                   </div>
                   <div className="p-3 bg-green-50 text-green-600 rounded-xl">
                     <CheckSquare2 className="w-6 h-6" />
@@ -511,9 +511,9 @@ export default function CambioGuardiaPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total solicitudes</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total de solicitudes</p>
                     <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.total}</h3>
-                    <p className="text-[10px] text-gray-400 mt-1">Filtradas actualmente</p>
+                    <p className="text-[10px] text-gray-400 mt-1">Cantidad de solicitudes que coinciden con los filtros actuales</p>
                   </div>
                   <div className="p-3 bg-red-50 text-red-600 rounded-xl">
                     <FileText className="w-6 h-6" />
@@ -521,9 +521,9 @@ export default function CambioGuardiaPage() {
                 </div>
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Pendientes</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Solicitudes pendientes</p>
                     <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.pending}</h3>
-                    <p className="text-[10px] text-gray-400 mt-1">Por revisar</p>
+                    <p className="text-[10px] text-gray-400 mt-1">Solicitudes que aún no han sido revisadas</p>
                   </div>
                   <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
                     <Clock className="w-6 h-6" />
@@ -531,9 +531,9 @@ export default function CambioGuardiaPage() {
                 </div>
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Aprobadas</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Solicitudes aprobadas</p>
                     <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.approved}</h3>
-                    <p className="text-[10px] text-gray-400 mt-1">Solicitudes exitosas</p>
+                    <p className="text-[10px] text-gray-400 mt-1">Solicitudes aceptadas y gestionadas con éxito</p>
                   </div>
                   <div className="p-3 bg-green-50 text-green-600 rounded-xl">
                     <CheckCircle className="w-6 h-6" />
@@ -541,9 +541,9 @@ export default function CambioGuardiaPage() {
                 </div>
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Rechazadas</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Solicitudes rechazadas</p>
                     <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.rejected}</h3>
-                    <p className="text-[10px] text-gray-400 mt-1">Solicitudes denegadas</p>
+                    <p className="text-[10px] text-gray-400 mt-1">Solicitudes que fueron denegadas</p>
                   </div>
                   <div className="p-3 bg-red-50 text-red-600 rounded-xl">
                     <XCircle className="w-6 h-6" />
@@ -555,7 +555,7 @@ export default function CambioGuardiaPage() {
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                     <Calendar className="w-4.5 h-4.5 text-red-600" />
-                    Solicitudes por Mes
+                    Solicitudes recibidas por mes
                   </h3>
                   {stats.byMonth.length === 0 ? (
                     <p className="text-xs text-gray-400 italic py-4 text-center">No hay datos mensuales.</p>
@@ -583,7 +583,7 @@ export default function CambioGuardiaPage() {
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
                   <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                     <User className="w-4.5 h-4.5 text-red-600" />
-                    Top solicitantes
+                    Solicitantes con más solicitudes
                   </h3>
                   {stats.byRequester.length === 0 ? (
                     <p className="text-xs text-gray-400 italic py-4 text-center">No hay datos de solicitantes.</p>

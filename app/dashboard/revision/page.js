@@ -183,9 +183,9 @@ export default function RevisionPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total reportes</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total de reportes</p>
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.total}</h3>
-                <p className="text-[10px] text-gray-400 mt-1">Reportes disponibles para revisión</p>
+                <p className="text-[10px] text-gray-400 mt-1">Cantidad de reportes que coinciden con los filtros actuales</p>
               </div>
               <div className="p-3 bg-red-50 text-red-600 rounded-xl">
                 <FileText className="w-6 h-6" />
@@ -193,9 +193,9 @@ export default function RevisionPage() {
             </div>
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Departamentos</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Departamentos con reporte</p>
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.departments}</h3>
-                <p className="text-[10px] text-gray-400 mt-1">Áreas con reportes</p>
+                <p className="text-[10px] text-gray-400 mt-1">Cantidad de áreas distintas con al menos un reporte</p>
               </div>
               <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
                 <Calendar className="w-6 h-6" />
@@ -203,9 +203,9 @@ export default function RevisionPage() {
             </div>
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Coordinadores</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Coordinadores activos</p>
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.coordinators}</h3>
-                <p className="text-[10px] text-gray-400 mt-1">Autores de reporte únicos</p>
+                <p className="text-[10px] text-gray-400 mt-1">Cantidad de personas que han subido reportes</p>
               </div>
               <div className="p-3 bg-green-50 text-green-600 rounded-xl">
                 <User className="w-6 h-6" />
@@ -347,9 +347,9 @@ export default function RevisionPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total reportes</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total de reportes</p>
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.total}</h3>
-                <p className="text-[10px] text-gray-400 mt-1">Filtrados actualmente</p>
+                <p className="text-[10px] text-gray-400 mt-1">Cantidad de reportes que coinciden con los filtros actuales</p>
               </div>
               <div className="p-3 bg-red-50 text-red-600 rounded-xl">
                 <FileText className="w-6 h-6" />
@@ -357,9 +357,9 @@ export default function RevisionPage() {
             </div>
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Departamentos</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Departamentos con reporte</p>
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.departments}</h3>
-                <p className="text-[10px] text-gray-400 mt-1">Áreas únicas</p>
+                <p className="text-[10px] text-gray-400 mt-1">Número de áreas distintas con al menos un reporte</p>
               </div>
               <div className="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
                 <Calendar className="w-6 h-6" />
@@ -367,9 +367,9 @@ export default function RevisionPage() {
             </div>
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Coordinadores</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Coordinadores activos</p>
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.coordinators}</h3>
-                <p className="text-[10px] text-gray-400 mt-1">Autores únicos</p>
+                <p className="text-[10px] text-gray-400 mt-1">Cantidad de personas que han subido reportes</p>
               </div>
               <div className="p-3 bg-green-50 text-green-600 rounded-xl">
                 <User className="w-6 h-6" />
@@ -377,21 +377,21 @@ export default function RevisionPage() {
             </div>
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Meses activos</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Meses con reporte</p>
                 <h3 className="text-2xl font-black text-gray-900 mt-1">{stats.byMonth.length}</h3>
-                <p className="text-[10px] text-gray-400 mt-1">Meses con reportes</p>
+                <p className="text-[10px] text-gray-400 mt-1">Número de meses con al menos un reporte</p>
+                  </div>
+                  <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                    <BarChart3 className="w-6 h-6" />
+                  </div>
+                </div>
               </div>
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                <BarChart3 className="w-6 h-6" />
-              </div>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                 <Calendar className="w-4.5 h-4.5 text-red-600" />
-                Reportes por Mes
+                Reportes recibidos por mes
               </h3>
               {stats.byMonth.length === 0 ? (
                 <p className="text-xs text-gray-400 italic py-4 text-center">No hay datos mensuales.</p>
@@ -419,7 +419,7 @@ export default function RevisionPage() {
             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                 <User className="w-4.5 h-4.5 text-red-600" />
-                Top Coordinadores
+                Coordinadores con más reportes
               </h3>
               {stats.byCoordinator.length === 0 ? (
                 <p className="text-xs text-gray-400 italic py-4 text-center">No hay datos de coordinadores.</p>
