@@ -12,6 +12,10 @@ import {
   EyeOff,
   Loader2,
   AlertCircle,
+  Sparkles,
+  UserRound,
+  Lock,
+  Wand2,
 } from "lucide-react";
 
 /* ─── Constants ──────────────────────────────────────────────────── */
@@ -19,6 +23,12 @@ const VEN_GREEN = "#288F3C";
 const VEN_GREEN_DARK = "#1C6B2B";
 const VEN_RED = "#C8102E";
 const VEN_RED_DARK = "#9B0B22";
+
+/* ─── Demo Credentials (entorno de demostración / portafolio) ────── */
+const DEMO_CREDENTIALS = {
+  email: "demo@ven911.gob.ve",
+  password: "demo1234",
+};
 
 /* ─── Framer Motion Variants ─────────────────────────────────────── */
 const cardVariants = {
@@ -199,6 +209,7 @@ export default function Home() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm({ mode: "onTouched" });
 
@@ -220,6 +231,12 @@ export default function Home() {
   const triggerShake = () => {
     setShaking(true);
     setTimeout(() => setShaking(false), 500);
+  };
+
+  /* Autocompleta el formulario con las credenciales demo */
+  const usarCredencialesDemo = () => {
+    setValue("email", DEMO_CREDENTIALS.email, { shouldValidate: true });
+    setValue("password", DEMO_CREDENTIALS.password, { shouldValidate: true });
   };
 
   const onSubmit = async ({ email, password, remember }) => {
@@ -341,6 +358,71 @@ export default function Home() {
               <div className="h-px w-12 bg-gradient-to-l from-transparent to-red-300" />
             </div>
           </div>
+
+          {/* ── Demo Access Panel ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.4 }}
+            className="mb-6 rounded-2xl border p-4"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(40,143,60,0.08), rgba(13,27,42,0.05))",
+              borderColor: "rgba(40,143,60,0.35)",
+            }}
+            role="note"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles
+                className="w-4 h-4"
+                style={{ color: VEN_GREEN }}
+                aria-hidden="true"
+              />
+              <p className="text-sm font-semibold text-gray-800">
+                Acceso de demostración
+              </p>
+            </div>
+            <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+              Entorno de portafolio con datos de prueba. Usa estas credenciales
+              para explorar el portal:
+            </p>
+
+            <div className="flex items-center gap-2 mb-2 text-xs">
+              <UserRound
+                className="w-3.5 h-3.5 shrink-0 text-gray-400"
+                aria-hidden="true"
+              />
+              <span className="text-gray-500 select-none">Usuario</span>
+              <code className="ml-auto font-mono text-gray-700 bg-white/70 border border-gray-200 rounded-md px-2 py-1">
+                {DEMO_CREDENTIALS.email}
+              </code>
+            </div>
+            <div className="flex items-center gap-2 mb-3 text-xs">
+              <Lock
+                className="w-3.5 h-3.5 shrink-0 text-gray-400"
+                aria-hidden="true"
+              />
+              <span className="text-gray-500 select-none">Contraseña</span>
+              <code className="ml-auto font-mono text-gray-700 bg-white/70 border border-gray-200 rounded-md px-2 py-1">
+                {DEMO_CREDENTIALS.password}
+              </code>
+            </div>
+
+            <button
+              type="button"
+              onClick={usarCredencialesDemo}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold text-white transition-all duration-200 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-1"
+              style={{
+                background: `linear-gradient(90deg, ${VEN_GREEN_DARK}, ${VEN_GREEN})`,
+                boxShadow: "0 2px 10px rgba(40,143,60,0.3)",
+                ["--tw-ring-color"]: VEN_GREEN,
+              }}
+            >
+              <Wand2 className="w-3.5 h-3.5" aria-hidden="true" />
+              Usar credenciales demo
+            </button>
+          </motion.div>
 
           {/* ── Server Error Banner ── */}
           <AnimatePresence mode="wait">
