@@ -6,6 +6,10 @@ import { logAudit } from '@/lib/auditLog';
 
 export const dynamic = 'force-dynamic';
 
+// En la demo todos los PDF apuntan al mismo archivo compartido (demo.pdf):
+// jamás debe borrarse de Google Drive, solo se elimina el registro.
+const DEMO_PDF_FILE_ID = '1A88mcs_LfRrJJ-5IBpTaXmsgXUCp_j5Z';
+
 // GET público — sirve a la Landing Page sin autenticación
 export async function GET() {
   try {
@@ -118,7 +122,7 @@ export async function DELETE(request) {
     const driveId = rows[0].file_drive_id;
     await sql`DELETE FROM formats WHERE id = ${id}`;
 
-    if (driveId && !driveId.startsWith('fake-')) {
+    if (driveId && !driveId.startsWith('fake-') && driveId !== DEMO_PDF_FILE_ID) {
       await deleteFileFromDrive(driveId);
     }
 
