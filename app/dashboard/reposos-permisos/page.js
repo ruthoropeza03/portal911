@@ -228,12 +228,28 @@ export default function RepososPermisosPage() {
 
   const getNombreMesAnio = (dateStr) => {
     if (!dateStr) return "Desconocido";
-    const date = new Date(dateStr);
-    if (Number.isNaN(date.getTime())) return "Desconocido";
+    const date = parseFecha(dateStr);
+    if (!date) return "Desconocido";
 
     const mes = MESES_ES[date.getMonth()];
     const anio = date.getFullYear();
     return `${mes.charAt(0).toUpperCase() + mes.slice(1)} ${anio}`;
+  };
+
+  // Convierte YYYY-MM-DD o ISO a Date local (si es YYYY-MM-DD se fuerza hora local
+  // para evitar el desplazamiento de zona horaria).
+  const parseFecha = (f) => {
+    if (!f) return null;
+    const s = String(f).trim();
+    if (!s) return null;
+    const esSoloFecha = /^\d{4}-\d{2}-\d{2}$/.test(s);
+    const d = new Date(esSoloFecha ? s + "T00:00:00" : s);
+    return Number.isNaN(d.getTime()) ? null : d;
+  };
+
+  const formatFecha = (f) => {
+    const d = parseFecha(f);
+    return d ? d.toLocaleDateString("es-VE") : "";
   };
 
   // Opciones únicas para los selectores de filtro
@@ -648,7 +664,7 @@ export default function RepososPermisosPage() {
                       <div className="border-t border-gray-100 pt-3 space-y-2">
                         <p className="text-xs text-gray-500 flex items-center">
                           <Calendar className="w-3.5 h-3.5 mr-1 text-gray-400" />
-                          Inicia el {new Date(leaf.start_date + "T00:00:00").toLocaleDateString("es-VE")}
+                          Inicia el {formatFecha(leaf.start_date)}
                         </p>
                         <p className="text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
                           <span className="font-semibold text-gray-900">Motivo:</span> {leaf.reason}
@@ -853,7 +869,7 @@ export default function RepososPermisosPage() {
                       <div className="grid grid-cols-2 gap-3 text-[10px] text-gray-500">
                         <div>
                           <p className="font-semibold text-gray-700">Inicio</p>
-                          <p>{new Date(leaf.start_date + "T00:00:00").toLocaleDateString("es-VE")}</p>
+                          <p>{formatFecha(leaf.start_date)}</p>
                         </div>
                         <div>
                           <p className="font-semibold text-gray-700">Días</p>
@@ -963,7 +979,7 @@ export default function RepososPermisosPage() {
                             </td>
                             <td className="p-4">
                               <p className="font-semibold text-gray-800">
-                                {new Date(leaf.start_date + "T00:00:00").toLocaleDateString("es-VE")}
+                                {formatFecha(leaf.start_date)}
                               </p>
                               <p className="text-[10px] text-gray-400 font-bold uppercase">{leaf.days_needed} días</p>
                             </td>
