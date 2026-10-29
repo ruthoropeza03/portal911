@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import sql from "@/lib/neon";
 import { verifyAuth } from "@/lib/auth";
 import { logAudit } from "@/lib/auditLog";
@@ -45,13 +46,14 @@ export async function PUT(request) {
       return NextResponse.json({ error: "Nombre y correo son obligatorios" }, { status: 400 });
     }
 
+    const passwordHash = password ? await bcrypt.hash(password, 10) : null;
     let query;
     if (password) {
       query = await sql`
         UPDATE users
         SET name = ${name},
             email = ${email},
-            password_hash = ${password}
+            password_hash = ${passwordHash}
         WHERE id = ${userAuth.id}
         RETURNING id, name, email, role, active
       `;

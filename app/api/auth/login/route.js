@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import sql from '@/lib/neon';
 import { signToken } from '@/lib/auth';
 import { logAudit } from '@/lib/auditLog';
@@ -35,9 +36,22 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Este usuario no tiene acceso al sistema' }, { status: 403 });
     }
 
-    // Comparación directa de texto plano (SIN HASH)
-    if (cleanPassword !== user.password_hash) {
+    const isLegacyPassword = !/^\$2[aby]\$\d{2}\$/.test(user.password_hash);
+    const isPasswordValid = isLegacyPassword
+      ? cleanPassword === user.password_hash
+      : await bcrypt.compare(cleanPassword, user.password_hash);
+
+    if (!isPasswordValid) {
       return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
+    }
+
+    if (isLegacyPassword) {
+      const passwordHash = await bcrypt.hash(cleanPassword, 10);
+      await sql`
+        UPDATE users
+        SET password_hash = ${passwordHash}
+        WHERE id = ${user.id} AND password_hash = ${user.password_hash}
+      `;
     }
 
     const payload = {
